@@ -1,0 +1,75 @@
+node_modules
+# ---------------------------------------------
+# Node.js & Express
+# ---------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Logs
+logs/
+*.log
+*.tmp
+*.out
+
+# PM2 logs
+.pids/
+pm2.log
+pm2-error.log
+
+# Coverage from tests
+coverage/
+*.lcov
+
+# Dist / Build
+dist/
+build/
+
+# ---------------------------------------------
+# Environment Files
+# ---------------------------------------------
+.env
+.env.local
+.env.*.local
+
+# Firebase
+serviceAccountKey.json
+firebase-adminsdk.json
+
+# ---------------------------------------------
+# OS Specific (Mac / Linux / Windows)
+# ---------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---------------------------------------------
+# IDE / Editor
+# ---------------------------------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ---------------------------------------------
+# Temporary files
+# ---------------------------------------------
+*.swp
+*.swo
+*.orig
+*.bak
+*.tmp
+*.cache
+
+# ---------------------------------------------
+# Uploads (если появится локальная папка)
+# ---------------------------------------------
+uploads/
+tmp/
+
+# ---------------------------------------------
+# MongoDB local dump
+# ---------------------------------------------
+dump/
