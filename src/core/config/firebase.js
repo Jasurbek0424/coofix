@@ -28,7 +28,7 @@ if (!serviceAccount) {
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: serviceAccount.project_id + '.appspot.com',
+  storageBucket: 'ecommerce-jasuraka.appspot.com',
 });
 
 const bucket = admin.storage().bucket();

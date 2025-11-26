@@ -1,10 +1,10 @@
-const uploadFileToFirebase = require('../../core/utils/uploadToFirebase');
+const uploadToCloudinary = require('../../core/utils/uploadToCloudinary');
 
 exports.uploadSingle = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file" });
 
-    const url = await uploadFileToFirebase(req.file);
+    const url = await uploadToCloudinary(req.file);
 
     res.json({
       success: true,
@@ -24,7 +24,7 @@ exports.uploadMultiple = async (req, res) => {
     const urls = [];
 
     for (const file of req.files) {
-      const url = await uploadFileToFirebase(file);
+      const url = await uploadToCloudinary(file);
       urls.push(url);
     }
 
