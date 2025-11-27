@@ -11,7 +11,7 @@ const options = {
     },
     servers: [
       { url: "http://localhost:8000/api" },
-      { url: "https://coofix-server.onrender.com" },
+      { url: "https://coofix-server.onrender.com/api" },
       // здесь потом добавишь продакшен URL
     ],
   },
