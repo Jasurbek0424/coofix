@@ -27,7 +27,7 @@ const controller = require('./category.controller');
  *         image:
  *           type: string
  *           nullable: true
- *           example: https://example.com/categories/smartphones.jpg
+ *           example: "https://example.com/categories/smartphones.jpg"
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -124,7 +124,21 @@ const controller = require('./category.controller');
  *                 example: false
  *               message:
  *                 type: string
- *                 example: E11000 duplicate key error collection: db.categories index: slug...
+ *                 example: Slug уже существует
+ *
+ *     NotFound:
+ *       description: Ресурс не найден
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               success:
+ *                 type: boolean
+ *                 example: false
+ *               message:
+ *                 type: string
+ *                 example: Категория не найдена
  */
 
 /**
@@ -156,7 +170,7 @@ router.get('/', controller.getAll);
  *       200:
  *         $ref: '#/components/responses/CategorySuccess'
  *       404:
- *         description: Категория не найдена
+ *         $ref: '#/components/responses/NotFound'
  */
 router.get('/:slug', controller.getOne);
 
@@ -209,7 +223,7 @@ router.post('/', controller.create);
  *       400:
  *         $ref: '#/components/responses/CategoryBadRequest'
  *       404:
- *         description: Категория не найдена
+ *         $ref: '#/components/responses/NotFound'
  */
 router.put('/:id', controller.update);
 
@@ -232,7 +246,7 @@ router.put('/:id', controller.update);
  *       200:
  *         $ref: '#/components/responses/CategoryDeleted'
  *       404:
- *         description: Категория не найдена
+ *         $ref: '#/components/responses/NotFound'
  */
 router.delete('/:id', controller.remove);
 
