@@ -1,22 +1,26 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  content: ["./src/**/*.{ts,tsx}"],
+  content: [
+    "./src/app/**/*.{js,ts,jsx,tsx}",
+    "./src/components/**/*.{js,ts,jsx,tsx}",
+  ],
+  darkMode: "class",
+
   theme: {
+    colors: {
+      white: "var(--white)",
+      black: "var(--black)",
+      background: "var(--background)",
+      gray: "var(--gray)",
+      smoky: "var(--smoky)",
+      dark: "var(--dark)",
+      coal: "var(--coal)",
+      orange: "var(--orange)",
+      red: "var(--red)",
+    },
+
     extend: {
-      colors: {
-        white: "#ffffff",
-        background: "#f2f5f7",
-        black: "#000000",
-        orange: "#f05a00",
-        red: "#fc573b",
-        gray: {
-          DEFAULT: "#dedbdb",
-          smoky: "#8a8a8a",
-          dark: "#3b3b3b",
-          coal: "#212526",
-        },
-      },
       fontFamily: {
         noto: ["var(--font-noto)", "Noto Sans", "sans-serif"],
       },

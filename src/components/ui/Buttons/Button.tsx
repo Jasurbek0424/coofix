@@ -26,9 +26,9 @@ export function Button({
   const variants = {
     primary: "bg-orange text-white hover:bg-black active:bg-black cursor-pointer",
     secondary:
-      "bg-white text-black border border-gray hover:bg-orange hover:text-white cursor-pointer",
-    gray: "bg-gray-smoky/20 text-gray-smoky cursor-not-allowed cursor-pointer",
-    dark: "bg-gray-dark text-white hover:bg-orange cursor-pointer",
+      "bg-white text-statDark border border-gray hover:bg-orange hover:text-white cursor-pointer",
+    gray: "bg-gray-smoky/20 text-gray-smoky cursor-not-allowed cursor-pointer border border-dark-coal",
+    dark: "bg-statDark dark:text-white hover:bg-orange cursor-pointer border border-dark-coal",
   };
 
   return (

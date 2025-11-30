@@ -1,34 +1,62 @@
 @import "tailwindcss";
 
-@theme {
-  /* Base colors */
-  --color-white: #ffffff;
-  --color-background: #f2f5f7;
-  --color-black: #000000;
-  --color-orange: #f05a00;
-  --color-red: #fc573b;
-  
-  /* Gray color variants */
-  --color-gray: #dedbdb;
-  --color-gray-smoky: #8a8a8a;
-  --color-gray-dark: #3b3b3b;
-  --color-gray-coal: #212526;
-  
-  /* Font family */
-  --font-family-noto: "Noto Sans", sans-serif;
-}
 
+
+/* Light mode variables */
 :root {
   --white: #ffffff;
-  --background: #f2f5f7;
   --black: #000000;
+  --background: #f2f5f7;
   --gray: #dedbdb;
   --smoky: #8a8a8a;
-  --gray-dark: #3b3b3b;
+
+  --foreground: #171717;
+  --statDark: #171717;
+
+  /* MAIN PROBLEM FIX: Light va dark ranglar endi boshqacha */
+  --dark: #fff;  /* light mode uchun */
   --coal: #212526;
+
   --orange: #f05a00;
   --red: #fc573b;
+
   --font-noto: "Noto Sans", sans-serif;
+}
+
+/* TAILWIND 4 THEME TOKENS */
+@theme {
+  --color-white: var(--white);
+  --color-black: var(--black);
+  --color-background: var(--background);
+  --color-gray: var(--gray);
+  --color-smoky: var(--smoky);
+  --color-dark: var(--dark);
+  --color-coal: var(--coal);
+  --color-orange: var(--orange);
+  --color-red: var(--red);
+  --color-foreground: var(--foreground);
+  --color-statDark: var(--statDark);
+}
+
+/* Dark mode variables */
+.dark {
+  --white: #ffffff;
+  --black: #ffffff;
+
+  --foreground: #ededed;
+  --background: #212526;
+
+  --gray: #dedbdb;
+  --smoky: #8a8a8a;
+
+  /* MAIN FIX: endi dark mode uchun ALBATTA boshqa rang */
+  --dark: #3B3B3B;  /* bundan oldin siz light bilan BIR XIL berib qo‘ygan edingiz */
+  --coal: #171717;
+
+  --statDark: #171717;
+
+  --orange: #f05a00;
+  --red: #fc573b;
 }
 
 body {
