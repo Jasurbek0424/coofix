@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import "../styles/globals.css"
+import "../styles/globals.css";
 import { Noto_Sans } from "next/font/google";
+
+import { ThemeProvider } from "next-themes";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://coofix.ru"),
@@ -60,16 +62,18 @@ const noto = Noto_Sans({
   variable: "--font-noto",
 });
 
-
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
-      <body className={`${noto.variable}`} >{children}</body>
+    <html lang="en" suppressHydrationWarning >
+      <body className={`${noto.variable} antialiased`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

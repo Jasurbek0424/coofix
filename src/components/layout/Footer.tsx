@@ -8,7 +8,7 @@ import Logo from "../../assets/logo.png"
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-coal text-white">
+    <footer className="bg-coal text-white">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Column 1: Product Categories */}
@@ -76,7 +76,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/pages/About"
+                  href="/about"
                   className="text-gray-smoky hover:text-orange transition-colors"
                 >
                   О компании
@@ -84,7 +84,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/pages/Contacts"
+                  href="/contacts"
                   className="text-gray-smoky hover:text-orange transition-colors"
                 >
                   Контакты
@@ -92,7 +92,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/pages/News"
+                  href="/news"
                   className="text-gray-smoky hover:text-orange transition-colors"
                 >
                   Новинки
