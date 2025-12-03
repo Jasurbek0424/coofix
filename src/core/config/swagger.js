@@ -9,10 +9,26 @@ const options = {
       version: "1.0.0",
       description: "API documentation for construction e-commerce platform",
     },
+
+        components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
+    
     servers: [
       { url: "http://localhost:8000/api" },
       { url: "https://coofix-server.onrender.com/api" },
-      // здесь потом добавишь продакшен URL
     ],
   },
   apis: [
