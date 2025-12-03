@@ -16,6 +16,7 @@ interface ProductCardProps {
   oldPrice?: number;
   image: string;
   inStock?: boolean;
+  variant?: "new" | "action" | "default";
 }
 
 export default function ProductCard({
@@ -23,6 +24,7 @@ export default function ProductCard({
   price,
   oldPrice,
   inStock = true,
+  variant,
 }: ProductCardProps) {
   const [mounted, setMounted] = useState(false);
   const [liked, setLiked] = useState(false);
@@ -44,22 +46,33 @@ export default function ProductCard({
       "
     >
       {/* Icons */}
-      <div className="flex justify-end items-center gap-3 mb-3">
-        <IconButton
-          variant="chart"
-          icon={FiBarChart2}
-          activeIcon={FiBarChart2}
-          active={addedChart}
-          onClick={() => setAddedChart(!addedChart)}
-        />
+      <div className="flex justify-between items-center gap-3 mb-3">
+        <div className="min-w-[70px] text-center">
+          {variant === "default" && <div />}
+          {variant === "new" && (
+            <p className="text-sm font-medium text-foreground bg-background px-2 py-1">Новинка</p>
+          )}
+          {variant === "action" && (
+            <p className="text-sm font-medium text-foreground bg-background px-2 py-1">Акция</p>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <IconButton
+            variant="chart"
+            icon={FiBarChart2}
+            activeIcon={FiBarChart2}
+            active={addedChart}
+            onClick={() => setAddedChart(!addedChart)}
+          />
 
-        <IconButton
-          variant="like"
-          icon={FiHeart}
-          activeIcon={FaHeart}
-          active={liked}
-          onClick={() => setLiked(!liked)}
-        />
+          <IconButton
+            variant="like"
+            icon={FiHeart}
+            activeIcon={FaHeart}
+            active={liked}
+            onClick={() => setLiked(!liked)}
+          />
+        </div>
       </div>
 
       {/* Image */}
@@ -69,6 +82,7 @@ export default function ProductCard({
           alt={title}
           width={220}
           height={180}
+          loading="eager"
           className="object-contain"
         />
       </div>
@@ -87,9 +101,7 @@ export default function ProductCard({
           </p>
 
           {oldPrice && (
-            <p className="text-[14px] line-through text-smoky">
-              {oldPrice} ₽
-            </p>
+            <p className="text-[14px] line-through text-smoky">{oldPrice} ₽</p>
           )}
 
           {inStock ? (

@@ -2,9 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FaInstagram, FaVk } from "react-icons/fa";
-import { FaFacebook } from "react-icons/fa";
-import Logo from "../../assets/logo.png"
+import Logo from "../../assets/logo.png";
+import { SocialIcons } from "@/components/ui/Icons/SocialIcons";
 
 export default function Footer() {
   return (
@@ -147,34 +146,8 @@ export default function Footer() {
 
           {/* Column 4: Social Media and Legal Information */}
           <div>
-            <div className="flex gap-4 mb-6">
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-gray-dark flex items-center justify-center text-white hover:bg-orange transition-colors"
-                aria-label="Instagram"
-              >
-                <FaInstagram size={20} />
-              </a>
-              <a
-                href="https://vk.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-gray-dark flex items-center justify-center text-white hover:bg-orange transition-colors"
-                aria-label="VKontakte"
-              >
-                <FaVk size={20} />
-              </a>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-gray-dark flex items-center justify-center text-white hover:bg-orange transition-colors"
-                aria-label="Facebook"
-              >
-                <FaFacebook size={20} />
-              </a>
+            <div className="mb-6">
+              <SocialIcons variant="footer" iconSize={20} />
             </div>
             <div className="space-y-2">
               <Link
