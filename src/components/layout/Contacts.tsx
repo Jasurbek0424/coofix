@@ -1,133 +1,144 @@
-/* eslint-disable react/no-unescaped-entities */
-import { HiPhone, HiClock, HiMail, HiLocationMarker } from "react-icons/hi";
+import {
+  HiPhone,
+  HiClock,
+  HiMail,
+  HiLocationMarker,
+  HiDeviceMobile,
+} from "react-icons/hi";
+import { SocialIcons } from "../ui/Icons/SocialIcons";
 
 export default function Contacts() {
   return (
-    <main className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl">
-        {/* Header */}
-        <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold text-foreground sm:text-5xl">
-            Biz bilan bog'lanish
+    <main className="container mx-auto px-4 py-12 sm:py-16 lg:py-20">
+      <div className="mx-auto">
+        <div className="mb-12 text-center lg:mb-16">
+          <h1 className="mb-4 text-4xl font-extrabold text-coal dark:text-foreground sm:text-5xl lg:text-6xl">
+            Свяжитесь с нами
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            Savollaringiz bo'lsa, bizga murojaat qiling
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Если у вас есть вопросы или предложения, мы всегда готовы помочь.
           </p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-2">
-          {/* Contact Information */}
-          <div className="space-y-6">
-            <div className="rounded-lg border border-gray-200 p-6 shadow-sm bg-transparent">
-              <h2 className="mb-6 text-2xl font-semibold text-black">
-                Kontakt ma'lumotlari
+        <div className="grid gap-10 lg:grid-cols-2">
+          <div className="space-y-8">
+            <div className="rounded-xl border border-dark p-8 shadow-lg bg-white dark:bg-dark min-h-[585px]">
+              <h2 className="mb-8 text-3xl font-bold text-coal dark:text-foreground">
+                Контактная информация
               </h2>
 
-              <div className="space-y-4">
-                {/* Location */}
+              <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/20">
-                    <HiLocationMarker className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange/10">
+                    <HiLocationMarker className="h-6 w-6 text-orange" />
                   </div>
                   <div>
-                    <h3 className="mb-1 font-semibold text-black dark:text-white">
-                      Manzil
+                    <h3 className="mb-1 font-semibold text-coal dark:text-foreground">
+                      Адрес
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Toshkent shahar, Yunusobod tumani
+                    <p className="text-smoky leading-relaxed">
+                      ТК Южные ворота МКАД,
                       <br />
-                      Amir Temur ko'chasi, 123-uy
+                      19-й километр, вл20с1
+                      <br />
+                      16 линия 79 павильон
                     </p>
                   </div>
                 </div>
 
                 {/* Phone */}
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/20">
-                    <HiPhone className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange/10">
+                    <HiPhone className="h-6 w-6 text-orange" />
                   </div>
                   <div>
-                    <h3 className="mb-1 font-semibold text-black dark:text-white">
-                      Telefon
+                    <h3 className="mb-1 font-semibold text-coal dark:text-foreground">
+                      Телефон
                     </h3>
                     <a
-                      href="tel:+998901234567"
-                      className="text-gray-600 transition-colors hover:text-orange-600 dark:text-gray-400 dark:hover:text-orange-400"
+                      href="tel:+79969900094"
+                      className="text-lg font-medium text-smoky transition-colors hover:text-orange "
                     >
-                      +998 90 123 45 67
+                      +7 (996) 990-00-94
                     </a>
                   </div>
                 </div>
 
                 {/* Email */}
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/20">
-                    <HiMail className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange/10">
+                    <HiMail className="h-6 w-6 text-orange" />
                   </div>
                   <div>
-                    <h3 className="mb-1 font-semibold text-black dark:text-white">
+                    <h3 className="mb-1 font-semibold text-coal dark:text-foreground">
                       Email
                     </h3>
                     <a
-                      href="mailto:info@coofix.uz"
-                      className="text-gray-600 transition-colors hover:text-orange-600 dark:text-gray-400 dark:hover:text-orange-400"
+                      href="mailto:coofix@mail.ru"
+                      className="text-lg font-medium text-smoky transition-colors hover:text-orange"
                     >
-                      info@coofix.uz
+                      coofix@mail.ru
                     </a>
                   </div>
                 </div>
 
                 {/* Working Hours */}
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/20">
-                    <HiClock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange/10">
+                    <HiClock className="h-6 w-6 text-orange" />
                   </div>
                   <div>
-                    <h3 className="mb-1 font-semibold text-black dark:text-white">
-                      Ish vaqti
+                    <h3 className="mb-1 font-semibold text-coal dark:text-foreground">
+                      Время работы
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Dushanba - Juma: 09:00 - 18:00
-                      <br />
-                      Shanba - Yakshanba: Dam olish
-                    </p>
+                    <p className="text-smoky">Без выходных: 09:00 - 18:00</p>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange/10">
+                    <HiDeviceMobile className="h-6 w-6 text-orange" />
+                  </div>
+                  <SocialIcons
+                    variant="header"
+                    className="flex"
+                    iconSize={22}
+                  />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Location Map */}
-          <div className="space-y-6">
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-              <h2 className="mb-6 text-2xl font-semibold text-black dark:text-white">
-                Bizning joylashuvimiz
+          <div className="space-y-8">
+            <div className="rounded-xl border border-dark p-8 shadow-lg bg-dark h-full flex flex-col min-h-[585px]">
+              <h2 className="mb-6 text-3xl font-bold text-coal dark:text-foreground">
+                Наше местоположение
               </h2>
 
-              {/* Map Placeholder */}
-              <div className="relative h-96 w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+              <div className="relative w-full overflow-hidden rounded-lg bg-dark grow min-h-[300px]">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2996.363480637712!2d69.240562!3d41.311081!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDHCsDE4JzM5LjkiTiA2OcKwMTQnMjYuMCJF!5e0!3m2!1sen!2s!4v1234567890"
+                  src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d2252.892983219038!2d37.784055599999995!3d55.621277799999994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zNTXCsDM3JzE2LjYiTiAzN8KwNDcnMDIuNiJF!5e0!3m2!1sru!2s!4v1764596590779!5m2!1sru!2s"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
+                  className="absolute inset-0"
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  className="absolute inset-0"
+                  title="Location Map"
                 ></iframe>
               </div>
 
-              {/* Additional Text Section */}
-              <div className="mt-6 space-y-4">
-                <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
-                  <h3 className="mb-2 font-semibold text-black dark:text-white">
-                    Qo'shimcha ma'lumot
+              <div className="mt-6">
+                <div className="rounded-lg bg-gray-50 p-4 dark:bg-dark/50 border border-gray-100 dark:border-gray-800">
+                  <h3 className="mb-2 font-semibold text-coal dark:text-foreground">
+                    Дополнительная информация
                   </h3>
                   <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                    Bizning ofisimiz shahar markazida joylashgan. Transport
-                    vositalari bilan qulay yetib borish mumkin. Mehmonxona
-                    oldida bepul parkovka mavjud.
+                    Наш офис расположен в центре города, что обеспечивает
+                    удобный доступ на общественном транспорте и личном
+                    автомобиле. Перед зданием имеется бесплатная парковка для
+                    посетителей.
                   </p>
                 </div>
               </div>
@@ -135,23 +146,23 @@ export default function Contacts() {
           </div>
         </div>
 
-        {/* Additional Text Content */}
-        <div className="mt-12 rounded-lg border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <h2 className="mb-6 text-2xl font-semibold text-black dark:text-white">
-            Biz haqimizda
+        <div className="mt-16 rounded-xl border border-background bg-dark p-8 shadow-lg ">
+          <h2 className="mb-6 text-3xl font-bold text-coal dark:text-foreground">
+            О нашей компании
           </h2>
-          <div className="prose prose-gray max-w-none dark:prose-invert">
-            <p className="mb-4 leading-relaxed text-gray-600 dark:text-gray-400">
-              {/* Bu yerda qo'shimcha matnlar bo'ladi */}
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+          <div className="space-y-4">
+            <p className="leading-relaxed text-smoky">
+              Coofix Tools — ваш надёжный партнёр в мире профессионального
+              инструмента. Мы стремимся обеспечить наших клиентов
+              высококачественной продукцией, гарантируя долговечность и
+              эффективность каждого инструмента. Наш приоритет — прозрачность и
+              отличное обслуживание.
             </p>
-            <p className="leading-relaxed text-gray-600 dark:text-gray-400">
-              Duis aute irure dolor in reprehenderit in voluptate velit esse
-              cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-              cupidatat non proident, sunt in culpa qui officia deserunt
-              mollit anim id est laborum.
+            <p className="leading-relaxed text-smoky">
+              Мы постоянно расширяем ассортимент и улучшаем логистику, чтобы вы
+              могли получить необходимый инструмент максимально быстро.
+              Свяжитесь с нами, и мы обсудим, как мы можем помочь вашему
+              бизнесу.
             </p>
           </div>
         </div>
@@ -159,4 +170,3 @@ export default function Contacts() {
     </main>
   );
 }
-
