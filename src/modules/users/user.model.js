@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema({
   password: String,
   provider: { type: String, default: 'local' },
   role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
-  refreshToken: { type: String, default: null }
+  refreshToken: { type: String, default: null },
+  isVerified: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

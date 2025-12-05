@@ -277,5 +277,6 @@ router.post('/refresh', controller.refresh);
  */
 
 router.post('/google', google.googleAuth);
+router.get('/verify', controller.verifyEmail);
 
 module.exports = router;

@@ -4,6 +4,10 @@ const {
   generateAccessToken,
   generateRefreshToken
 } = require('../../core/utils/jwt');
+const VerifyToken = require('../verify/verifyToken.model');
+const crypto = require("crypto");
+const sendEmail = require('../../core/utils/sendEmail');
+
 
 exports.register = async ({ name, email, password }) => {
   const existing = await User.findOne({ email });
@@ -14,23 +18,35 @@ exports.register = async ({ name, email, password }) => {
   const user = await User.create({
     name,
     email,
-    password: hashed
+    password: hashed,
+    isVerified: false
   });
 
-  const payload = { id: user._id, role: user.role };
+  const token = crypto.randomBytes(32).toString("hex");
 
-  const accessToken = generateAccessToken(payload);
-  const refreshToken = generateRefreshToken(payload);
+  await VerifyToken.create({
+    userId: user._id,
+    token,
+    expiresAt: Date.now() + 1000 * 60 * 60
+  });
 
-  user.refreshToken = refreshToken;
-  await user.save();
+  const url = `${process.env.CLIENT_URL}/verify-email?token=${token}&user=${user._id}`;
 
-  return { user, accessToken, refreshToken };
+  await sendEmail(email, "Verify Email", `
+    <h2>Подтверждение почты</h2>
+    <p>Нажмите на ссылку:</p>
+    <a href="${url}">${url}</a>
+  `);
+
+  return {
+    message: "Check your email to verify your account"
+  };
 };
 
 exports.login = async ({ email, password }) => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("User not found");
+  if (!user.isVerified) throw new Error("Email not verified");
 
   const match = await bcrypt.compare(password, user.password);
   if (!match) throw new Error("Invalid password");

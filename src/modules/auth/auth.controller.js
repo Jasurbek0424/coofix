@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../users/user.model');
 const { JWT_REFRESH_SECRET } = require('../../core/config/env');
 const { generateAccessToken, generateRefreshToken } = require('../../core/utils/jwt');
+const VerifyToken = require('../verify/verifyToken.model');
 
 exports.register = async (req, res) => {
   try {
@@ -53,4 +54,21 @@ exports.refresh = async (req, res) => {
   } catch (err) {
     return res.status(403).json({ message: "Invalid refresh token" });
   }
+};
+
+exports.verifyEmail = async (req, res) => {
+  const { token, user } = req.query;
+
+  const record = await VerifyToken.findOne({ userId: user, token });
+  if (!record) return res.status(400).json({ message: "Invalid or expired token" });
+
+  if (record.expiresAt < Date.now()) {
+    await VerifyToken.deleteOne({ _id: record._id });
+    return res.status(400).json({ message: "Token expired" });
+  }
+
+  await User.findByIdAndUpdate(user, { isVerified: true });
+  await VerifyToken.deleteOne({ _id: record._id });
+
+  return res.json({ success: true, message: "Email verified" });
 };
