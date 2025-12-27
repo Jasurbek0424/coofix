@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { connectDB } = require('./core/database/mongo');
 const routes = require('./routes');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
@@ -11,10 +12,11 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+app.use(cookieParser());
 app.use(express.json());
 
 connectDB();
-
+//asdaaaaaa
 app.use('/api', routes);
 
 module.exports = app;
