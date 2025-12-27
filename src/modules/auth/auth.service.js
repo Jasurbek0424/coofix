@@ -59,5 +59,12 @@ exports.login = async ({ email, password }) => {
   user.refreshToken = refreshToken;
   await user.save();
 
-  return { user, accessToken, refreshToken };
+  const safeUser = {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role
+  };
+
+  return { user: safeUser, accessToken, refreshToken };
 };

@@ -16,7 +16,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 connectDB();
-//asdaaaaaa
+
 app.use('/api', routes);
 
 module.exports = app;
