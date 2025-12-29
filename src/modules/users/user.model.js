@@ -6,7 +6,6 @@ const userSchema = new mongoose.Schema({
 
   phone: {
     type: String,
-    required: true,
     match: [
       /^(\+7|8)\d{10}$/,
       'Неверный формат номера телефона (Россия)'
@@ -16,21 +15,17 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     unique: true,
-    required: true
   },
 
   address: {
     city: {
       type: String,
-      required: true
     },
     street: {
       type: String,
-      required: true
     },
     house: {
       type: String,
-      required: true
     },
     building: {
       type: String
