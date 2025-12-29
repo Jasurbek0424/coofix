@@ -1,5 +1,5 @@
-const Order = require('./order.model');
-const Cart = require('../cart/cart.model');
+const Order = require("./order.model");
+const Cart = require("../cart/cart.model");
 
 exports.createOrder = async (userId, address, phone) => {
   const cart = await Cart.findOne({ user: userId });
@@ -10,15 +10,16 @@ exports.createOrder = async (userId, address, phone) => {
 
   const order = await Order.create({
     user: userId,
-    items: cart.items.map(item => ({
-      product: item.product,
+    items: cart.items.map((item) => ({
+      product: item.product._id,
+      title: item.product.title,
+      price: item.price,
       quantity: item.quantity,
-      price: item.price
     })),
     total: cart.total,
     address,
     phone,
-    status: "pending"
+    status: "pending",
   });
 
   // Очистка корзины после заказа
@@ -28,7 +29,6 @@ exports.createOrder = async (userId, address, phone) => {
 
   return order;
 };
-
 
 exports.getUserOrders = async (userId) => {
   return Order.find({ user: userId })
@@ -44,9 +44,5 @@ exports.getAllOrders = async () => {
 };
 
 exports.updateStatus = async (orderId, status) => {
-  return Order.findByIdAndUpdate(
-    orderId,
-    { status },
-    { new: true }
-  );
+  return Order.findByIdAndUpdate(orderId, { status }, { new: true });
 };

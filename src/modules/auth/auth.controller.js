@@ -105,3 +105,33 @@ exports.logout = async (req, res) => {
   res.clearCookie('refreshToken');
   res.json({ success: true });
 };
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const {
+      name,
+      lastName,
+      phone,
+      address
+    } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        name,
+        lastName,
+        phone,
+        address
+      },
+      { new: true, runValidators: true }
+    ).select('-password -refreshToken');
+
+    res.json({ success: true, user });
+
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
