@@ -1,18 +1,25 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.sendgrid.net",
+  port: 587,
+  secure: false,
   auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAIL_APP_PASSWORD
+    user: "apikey",
+    pass: process.env.SENDGRID_API_KEY
   }
 });
 
 module.exports = async (to, subject, html) => {
-  await transporter.sendMail({
-    from: `"Coofix Uz" <${process.env.EMAIL}>`,
-    to,
-    subject,
-    html
-  });
+  try {
+    await transporter.sendMail({
+      from: `"Coofix Uz" <${process.env.EMAIL_FROM}>`,
+      to,
+      subject,
+      html
+    });
+  } catch (err) {
+    console.error("SENDGRID ERROR:", err);
+    throw err;
+  }
 };
