@@ -1,5 +1,8 @@
 const router = require('express').Router();
 const controller = require('./auth.controller');
+const upload = require('../../core/utils/upload');
+const validate = require('../../core/middleware/validate');
+const { registerSchema, loginSchema, refreshSchema } = require('./auth.validation');
 const google = require('./auth.google.controller');
 
 /**
@@ -148,7 +151,7 @@ const google = require('./auth.google.controller');
  *         $ref: '#/components/responses/BadRequest'
  */
 
-router.post('/register', controller.register);
+router.post('/register', validate(registerSchema), controller.register);
 
 /**
  * @swagger
@@ -194,7 +197,7 @@ router.post('/register', controller.register);
  *         $ref: '#/components/responses/BadRequest'
  */
 
-router.post('/login', controller.login);
+router.post('/login', validate(loginSchema), controller.login);
 
 /**
  * @swagger
@@ -235,7 +238,7 @@ router.post('/login', controller.login);
  *         $ref: '#/components/responses/Forbidden'
  */
 
-router.post('/refresh', controller.refresh);
+router.post('/refresh', validate(refreshSchema), controller.refresh);
 
 /**
  * @swagger

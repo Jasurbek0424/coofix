@@ -15,5 +15,9 @@ router.use('/reviews', require('./modules/reviews/review.routes'))
 router.use('/upload', require('./modules/upload/upload.routes'));
 
 router.use('/admin/products', require('./modules/products/product.admin.routes'));
+router.use('/stats', require('./modules/stats/stats.routes'));
+
+router.use('/admin/users', require('./modules/users/user.admin.routes'));
+router.use('/admin/reviews', require('./modules/reviews/review.admin.routes'));
 
 module.exports = router;
