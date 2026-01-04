@@ -3,26 +3,83 @@ const Order = require('../orders/order.model');
 const User = require('../users/user.model');
 
 exports.overview = async (req, res) => {
-  const [products, orders, users] = await Promise.all([
+  const now = new Date();
+
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+  const [
+    totalProducts,
+    totalOrders,
+    totalUsers,
+
+    newUsersThisMonth,
+    newUsersLastMonth,
+
+    revenueThisMonthAgg,
+    revenueLastMonthAgg,
+  ] = await Promise.all([
     Product.countDocuments(),
     Order.countDocuments(),
+    User.countDocuments(),
+
+    User.countDocuments({ createdAt: { $gte: startOfThisMonth } }),
     User.countDocuments({
-      createdAt: {
-        $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-      },
+      createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth },
     }),
+
+    Order.aggregate([
+      { $match: { status: 'delivered', createdAt: { $gte: startOfThisMonth } } },
+      { $group: { _id: null, total: { $sum: '$total' } } },
+    ]),
+
+    Order.aggregate([
+      {
+        $match: {
+          status: 'delivered',
+          createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth },
+        },
+      },
+      { $group: { _id: null, total: { $sum: '$total' } } },
+    ]),
   ]);
 
-  const revenueAgg = await Order.aggregate([
-    { $match: { status: 'Delivered' } },
-    { $group: { _id: null, total: { $sum: '$totalPrice' } } },
-  ]);
+  const revenueThisMonth = revenueThisMonthAgg[0]?.total || 0;
+  const revenueLastMonth = revenueLastMonthAgg[0]?.total || 0;
+
+  const calcChange = (current, previous) => {
+    if (previous === 0) {
+      return {
+        percent: current > 0 ? 100 : 0,
+        type: current > 0 ? 'positive' : 'neutral',
+      };
+    }
+
+    const percent = Math.round(((current - previous) / previous) * 100);
+
+    return {
+      percent,
+      type: percent > 0 ? 'positive' : percent < 0 ? 'negative' : 'neutral',
+    };
+  };
+
+  const usersChange = calcChange(newUsersThisMonth, newUsersLastMonth);
+  const revenueChange = calcChange(revenueThisMonth, revenueLastMonth);
 
   res.json({
-    totalProducts: products,
-    totalOrders: orders,
-    newUsers: users,
-    revenue: revenueAgg[0]?.total || 0,
+    totalProducts,
+    totalOrders,
+
+    newUsers: {
+      value: newUsersThisMonth,
+      ...usersChange,
+    },
+
+    revenue: {
+      value: revenueThisMonth,
+      ...revenueChange,
+    },
   });
 };
 
