@@ -29,26 +29,41 @@ exports.overview = async (req, res) => {
 exports.sales = async (req, res) => {
   const data = await Order.aggregate([
     {
-      $group: {
-        _id: { $month: '$createdAt' },
-        sales: { $sum: '$totalPrice' },
-        orders: { $sum: 1 },
-      },
+      $match: {
+        status: { $in: ['confirmed', 'delivered'] }
+      }
     },
-    { $sort: { '_id': 1 } },
+    {
+      $group: {
+        _id: {
+          year: { $year: '$createdAt' },
+          month: { $month: '$createdAt' }
+        },
+        sales: { $sum: '$total' },
+        orders: { $sum: 1 }
+      }
+    },
+    {
+      $sort: {
+        '_id.year': 1,
+        '_id.month': 1
+      }
+    }
   ]);
 
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const months = [
+    'Jan','Feb','Mar','Apr','May','Jun',
+    'Jul','Aug','Sep','Oct','Nov','Dec'
+  ];
 
   res.json(
     data.map(item => ({
-      name: months[item._id - 1],
+      name: `${months[item._id.month - 1]} ${item._id.year}`,
       sales: item.sales,
-      orders: item.orders,
+      orders: item.orders
     }))
   );
 };
-
 
 exports.byCategory = async (req, res) => {
   const data = await Order.aggregate([

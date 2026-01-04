@@ -197,7 +197,7 @@ router.post('/register', validate(registerSchema), controller.register);
  *         $ref: '#/components/responses/BadRequest'
  */
 
-router.post('/login', validate(loginSchema), controller.login);
+router.post('/login', controller.login);
 
 /**
  * @swagger
