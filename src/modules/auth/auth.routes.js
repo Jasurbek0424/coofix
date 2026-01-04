@@ -281,5 +281,6 @@ router.post('/refresh', validate(refreshSchema), controller.refresh);
 
 router.post('/google', google.googleAuth);
 router.get('/verify', controller.verifyEmail);
+router.post('/logout', controller.logout);
 
 module.exports = router;
