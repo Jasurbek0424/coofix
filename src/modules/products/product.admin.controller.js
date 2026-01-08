@@ -1,5 +1,6 @@
 const Product = require('./product.model');
 const makeSlug = require('../../core/utils/slugify');
+const cloudinary = require('cloudinary').v2;
 
 exports.create = async (req, res) => {
   try {
@@ -29,8 +30,7 @@ exports.create = async (req, res) => {
       brand,
       images: images || [],
       characteristics: characteristics || {},
-      quantity: quantity || 0,
-      inStock: quantity > 0,
+      stock: quantity || 0,
       isNew: isNew || false,
       isSale: isSale || false
     });
@@ -59,10 +59,29 @@ exports.update = async (req, res) => {
 
 exports.remove = async (req, res) => {
   try {
-    await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found',
+      });
+    }
+
+    for (const img of product.images) {
+      if (img.publicId) {
+        await cloudinary.uploader.destroy(img.publicId);
+      }
+    }
+
+    await product.deleteOne();
+
     res.json({ success: true });
   } catch (err) {
-    res.status(400).json({ success: false, message: err.message });
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
 
@@ -73,8 +92,7 @@ exports.updateStock = async (req, res) => {
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       {
-        quantity,
-        inStock: quantity > 0
+        stock: quantity
       },
       { new: true }
     );

@@ -2,15 +2,16 @@ const uploadToCloudinary = require('../../core/utils/uploadToCloudinary');
 
 exports.uploadSingle = async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ message: "No file" });
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file' });
+    }
 
-    const url = await uploadToCloudinary(req.file);
+    const image = await uploadToCloudinary(req.file);
 
     res.json({
       success: true,
-      url
+      image,
     });
-
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -18,22 +19,22 @@ exports.uploadSingle = async (req, res) => {
 
 exports.uploadMultiple = async (req, res) => {
   try {
-    if (!req.files || req.files.length === 0)
-      return res.status(400).json({ message: "No files" });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: 'No files' });
+    }
 
-    const urls = [];
+    const images = [];
 
     for (const file of req.files) {
-      const url = await uploadToCloudinary(file);
-      urls.push(url);
+      images.push(await uploadToCloudinary(file));
     }
 
     res.json({
       success: true,
-      urls
+      images,
     });
-
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+

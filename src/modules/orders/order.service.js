@@ -1,33 +1,73 @@
 const Order = require("./order.model");
 const Cart = require("../cart/cart.model");
 
+const mongoose = require('mongoose');
+
+const ALLOWED_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
+
 exports.createOrder = async (userId, address, phone) => {
-  const cart = await Cart.findOne({ user: userId });
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  if (!cart || cart.items.length === 0) {
-    throw new Error("Cart is empty");
+  try {
+    const cart = await Cart.findOne({ user: userId }).session(session);
+
+    if (!cart || cart.items.length === 0) {
+      throw new Error("Cart is empty");
+    }
+
+    if (!address?.trim()) {
+      throw new Error("Address is required");
+    }
+
+    if (!phone?.match(/^\+?[0-9]{9,15}$/)) {
+      throw new Error("Invalid phone number");
+    }
+
+    // Проверка стока и обновление
+    for (const item of cart.items) {
+      const product = await Product.findById(item.product).session(session);
+
+      if (!product) {
+        throw new Error(`Product ${item.product} not found`);
+      }
+
+      if (product.stock < item.quantity) {
+        throw new Error(`Not enough stock for ${product.name}`);
+      }
+
+      product.stock -= item.quantity;
+      await product.save({ session });
+    }
+
+    const order = await Order.create([{
+      user: userId,
+      items: cart.items.map((item) => ({
+        product: item.product._id,
+        title: item.product.title, // Note: title might need to be fetched if not in cart item, but assuming it is populated or ok
+        price: item.price,
+        quantity: item.quantity,
+      })),
+      total: cart.total,
+      address,
+      phone,
+      status: "pending",
+    }], { session });
+
+    cart.items = [];
+    cart.total = 0;
+    await cart.save({ session });
+
+    await session.commitTransaction();
+    return order[0];
+
+  } catch (err) {
+    await session.abortTransaction();
+    throw err;
+
+  } finally {
+    session.endSession();
   }
-
-  const order = await Order.create({
-    user: userId,
-    items: cart.items.map((item) => ({
-      product: item.product._id,
-      title: item.product.title,
-      price: item.price,
-      quantity: item.quantity,
-    })),
-    total: cart.total,
-    address,
-    phone,
-    status: "pending",
-  });
-
-  // Очистка корзины после заказа
-  cart.items = [];
-  cart.total = 0;
-  await cart.save();
-
-  return order;
 };
 
 exports.getUserOrders = async (userId) => {
@@ -43,6 +83,15 @@ exports.getAllOrders = async () => {
     .sort({ createdAt: -1 });
 };
 
+
 exports.updateStatus = async (orderId, status) => {
-  return Order.findByIdAndUpdate(orderId, { status }, { new: true });
+  if (!ALLOWED_STATUSES.includes(status)) {
+    throw new Error("Invalid order status");
+  }
+
+  return Order.findByIdAndUpdate(
+    orderId,
+    { status },
+    { new: true }
+  );
 };

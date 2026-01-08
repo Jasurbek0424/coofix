@@ -30,8 +30,14 @@ exports.addToCart = async (userId, productId, quantity = 1) => {
   );
 
   if (existing) {
+    if (existing.quantity + quantity > product.stock) {
+      throw new Error(`Not enough stock. Available: ${product.stock}`);
+    }
     existing.quantity += quantity;
   } else {
+    if (quantity > product.stock) {
+      throw new Error(`Not enough stock. Available: ${product.stock}`);
+    }
     cart.items.push({
       product: productId,
       quantity,
@@ -55,6 +61,12 @@ exports.changeQuantity = async (userId, productId, quantity) => {
   const item = cart.items.find(i => i.product.toString() === productId);
   if (!item) throw new Error("Item not found");
 
+  const product = await Product.findById(item.product);
+
+  if (quantity > product.stock) {
+    throw new Error(`Not enough stock. Available: ${product.stock}`);
+  }
+
   item.quantity = quantity;
 
   // если 0 — удаляем
@@ -64,7 +76,7 @@ exports.changeQuantity = async (userId, productId, quantity) => {
 
   cart.total = cart.items.reduce((sum, item) =>
     sum + item.quantity * item.price
-  , 0);
+    , 0);
 
   await cart.save();
   return cart;
@@ -80,7 +92,7 @@ exports.removeFromCart = async (userId, productId) => {
 
   cart.total = cart.items.reduce((sum, item) =>
     sum + item.quantity * item.price
-  , 0);
+    , 0);
 
   await cart.save();
   return cart;

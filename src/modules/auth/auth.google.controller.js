@@ -7,7 +7,6 @@ exports.googleAuth = async (req, res) => {
   try {
     const { idToken } = req.body;
 
-    // Проверяем токен на Firebase
     const googleUser = await admin.auth().verifyIdToken(idToken);
 
     const { email, name } = googleUser;
@@ -15,17 +14,14 @@ exports.googleAuth = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (!user) {
-      // Создаём пользователя, если первый вход
       user = await User.create({
         name,
         email,
         provider: 'google',
-        password: null, // нет пароля
+        password: null,
         role: 'customer'
       });
     }
-
-    // Генерируем свой JWT для сайта
     const token = jwt.sign(
       { id: user._id, role: user.role },
       JWT_SECRET,

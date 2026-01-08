@@ -22,7 +22,12 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
 
-    images: [{ type: String }], // массив Firebase ссылок
+    images: [
+      {
+        url: String,
+        publicId: String,
+      }
+    ],
 
     characteristics: {
       type: Object,
@@ -31,8 +36,13 @@ const productSchema = new mongoose.Schema(
       // { "power": "750W", "weight": "1.2kg", "color": "blue" }
     },
 
-    inStock: { type: Boolean, default: true },
-    quantity: { type: Number, default: 0 },
+    stock: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+      index: true
+    },
 
     isNew: { type: Boolean, default: false },
     isSale: { type: Boolean, default: false },
@@ -42,5 +52,12 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+productSchema.virtual("inStock").get(function () {
+  return this.stock > 0;
+});
+
+productSchema.set("toJSON", { virtuals: true });
+productSchema.set("toObject", { virtuals: true });
 
 module.exports = mongoose.model("Product", productSchema);
