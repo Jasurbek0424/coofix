@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   // Avvalgi konfiguratsiya opsiyalari
   reactCompiler: true,
   
+  // Build papkasini o'zgartirish (Netlify uchun default .next ishlatamiz)
+  // distDir: 'dist', // Agar kerak bo'lsa, oching
+  
   // ✨ Yangi: Tasvirlar konfiguratsiyasi qo'shildi
   images: {
     remotePatterns: [
