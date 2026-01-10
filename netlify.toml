@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  # Next.js plugin avtomatik publish directory'ni aniqlaydi
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NODE_VERSION = "20"
