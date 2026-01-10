@@ -1,9 +1,20 @@
 [build]
   command = "npm run build"
-  # Next.js plugin avtomatik publish directory'ni aniqlaydi
+  # Netlify Next.js Runtime plugin publish directory'ni avtomatik aniqlaydi
+  # publish directory'ni bo'sh qoldiring yoki o'chiring
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
 [build.environment]
   NODE_VERSION = "20"
+  
+# Next.js uchun kerakli sozlamalar
+[functions]
+  node_bundler = "esbuild"
+  
+# SPA routing uchun redirect qoidasi (Next.js plugin o'zi hal qiladi, lekin qo'shish ham mumkin)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
