@@ -1,7 +1,7 @@
 // src/components/layout/Header/Header.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -19,11 +19,16 @@ import { SearchBar } from "@/components/ui/SearchBar/SearchBar";
 import { CatalogDropdown } from "@/components/ui/Dropdown/CatalogDropdown";
 
 import { Modal } from "@/components/ui/Modal";
+import { SuccessModal } from "@/components/ui/Modal";
 import { CallbackForm } from "@/components/ui/Forms";
 import { useModal } from "@/hooks/useModal";
+import type { CallbackFormData } from "@/lib/validations";
 import ThemeToggle from "../ui/ToggleTheme/ThemeToggle";
 import clsx from "clsx";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
+import { useCart } from "@/store/useCart";
+import { useFavorites } from "@/store/useFavorites";
+import { useCompare } from "@/store/useCompare";
 
 interface MobileFixedNavProps {
   wishlistCount: number;
@@ -114,18 +119,78 @@ const MobileFixedNav = ({
 };
 
 export default function Header() {
-  const [cartCount] = useState(1);
-  const [wishlistCount] = useState(1);
-  const [compareCount] = useState(1);
-  const [cartTotal] = useState(2000);
+  // ✨ FIX 1: useCart dan to'g'ri obuna bo'lish - Har bir qiymat alohida selector orqali olinadi.
+  const cartCountFromStore = useCart(state => state.totalItems);
+  const cartTotalFromStore = useCart(state => state.total);
+
+  // ✨ FIX: useFavorites dan to'g'ri obuna bo'lish - count property dan foydalanish
+  const wishlistCountFromStore = useFavorites(state => state.count);
+  
+  // ✨ FIX: useCompare dan to'g'ri obuna bo'lish - count property dan foydalanish
+  const compareCountFromStore = useCompare(state => state.count);
+
+  // Hydrationni boshqarish uchun mounted state
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+  
+  // Mounted bo'lmaguncha 0 qiymatidan foydalanishni ta'minlaymiz
+  const wishlistCount = mounted ? wishlistCountFromStore : 0;
+  const compareCount = mounted ? compareCountFromStore : 0;
+  const displayCartCount = mounted ? cartCountFromStore : 0;
+  const displayCartTotal = mounted ? cartTotalFromStore : 0;
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const { isOpen, open, close } = useModal();
+  const { isOpen, open, close: closeCallback } = useModal();
+  const { 
+    isOpen: isSuccessOpen, 
+    open: openSuccess, 
+    close: closeSuccess 
+  } = useModal();
 
-  const handleSubmit = async (data: unknown) => {
-    // API call
-    await console.log(data);
-    close();
+  const close = () => {
+    setSubmitError(null);
+    setIsSubmitting(false);
+    closeCallback();
+  };
+
+  const handleSubmit = async (data: CallbackFormData) => {
+    try {
+      setIsSubmitting(true);
+      setSubmitError(null);
+
+      const response = await fetch("/api/telegram/callback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Ошибка при отправке заявки");
+      }
+
+      // Close callback form and show success modal
+      closeCallback();
+      openSuccess();
+    } catch (error) {
+      console.error("Error submitting callback form:", error);
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Ошибка при отправке заявки. Попробуйте позже."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -172,6 +237,7 @@ export default function Header() {
                 <ThemeToggle />
 
                 <div className="hidden lg:flex items-center gap-2 md:gap-4">
+                  {/* Izlangan mahsulotlar (Desktop) */}
                   <Link
                     href="/favorites"
                     className="relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 text-white hover:text-orange transition-colors"
@@ -185,7 +251,9 @@ export default function Header() {
                     )}
                   </Link>
 
-                  <button
+                  {/* Qiyoslash (Desktop) */}
+                  <Link
+                    href="/compare"
                     className="relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 text-white hover:text-orange transition-colors"
                     aria-label="Сравнение"
                   >
@@ -195,7 +263,7 @@ export default function Header() {
                         {compareCount}
                       </span>
                     )}
-                  </button>
+                  </Link>
 
                   <Link
                     href="/profile"
@@ -205,15 +273,16 @@ export default function Header() {
                     <FiUser size={20} />
                   </Link>
 
+                  {/* Savatcha (Desktop) */}
                   <Link
                     href="/cart"
-                    className="relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 text-white hover:text-orange transition-colors lg:w-10" // lg da ham Savat ikonka qoldi
+                    className="relative flex items-center justify-center w-8 h-8 md:w-10 md:h-10 text-white hover:text-orange transition-colors lg:w-10"
                     aria-label="Корзина"
                   >
                     <FiShoppingCart size={20} />
-                    {cartCount > 0 && (
+                    {displayCartCount > 0 && (
                       <span className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-orange rounded-full flex items-center justify-center text-[10px] md:text-xs font-bold text-white">
-                        {cartCount}
+                        {displayCartCount}
                       </span>
                     )}
                   </Link>
@@ -221,7 +290,7 @@ export default function Header() {
                 <div className="hidden sm:block ml-2 md:ml-4 text-white">
                   <p className="text-xs">Товаров на сумму</p>
                   <p className="text-sm font-bold">
-                    {cartTotal.toLocaleString("ru-RU")} ₽
+                    {displayCartTotal.toLocaleString("ru-RU")} ₽
                   </p>
                 </div>
                 <button
@@ -353,14 +422,28 @@ export default function Header() {
         </div>
 
         <Modal isOpen={isOpen} onClose={close} title="Заказать звонок">
-          <CallbackForm onSubmit={handleSubmit} />
+          {submitError && (
+            <div className="mb-4 bg-red-500/10 border border-red-500 text-red-600 dark:text-red-400 px-4 py-3 rounded">
+              {submitError}
+            </div>
+          )}
+          <CallbackForm onSubmit={handleSubmit} isLoading={isSubmitting} />
         </Modal>
+
+        <SuccessModal
+          isOpen={isSuccessOpen}
+          onClose={closeSuccess}
+          title="Заявка принята"
+          message="Спасибо за заявку! Мы свяжемся с вами в ближайшее время."
+          buttonText="ОК"
+          onButtonClick={closeSuccess}
+        />
       </header>
 
       <MobileFixedNav
         wishlistCount={wishlistCount}
         compareCount={compareCount}
-        cartCount={cartCount}
+        cartCount={displayCartCount}
         openCallbackModal={open}
       />
     </>

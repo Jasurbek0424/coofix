@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormData } from "@/lib/validations";
 import { FormInput } from "./FormInput";
+import { PasswordInput } from "./PasswordInput";
 import { Button } from "../Buttons/Button";
 
 interface LoginFormProps {
@@ -30,9 +31,8 @@ export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
         error={errors.email?.message}
       />
 
-      <FormInput
+      <PasswordInput
         label="Пароль"
-        type="password"
         placeholder="Введите пароль"
         {...register("password")}
         error={errors.password?.message}

@@ -1,6 +1,8 @@
 export { FormInput } from "./FormInput";
+export { PasswordInput } from "./PasswordInput";
 export { FormTextarea } from "./FormTextarea";
 export { CallbackForm } from "./CallbackForm";
 export { RegistrationForm } from "./RegistrationForm";
+export { OrderForm } from "./OrderForm";
 export { LoginForm } from "./LoginForm";
 export { SMSVerificationForm } from "./SMSVerificationForm";

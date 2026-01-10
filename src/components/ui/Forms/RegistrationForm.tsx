@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registrationSchema, type RegistrationFormData } from "@/lib/validations";
 import { FormInput } from "./FormInput";
+import { PasswordInput } from "./PasswordInput";
 import { Button } from "../Buttons/Button";
 import { useState } from "react";
 
@@ -93,18 +94,16 @@ export function RegistrationForm({
         error={errors.email?.message || emailError}
       />
 
-      <FormInput
+      <PasswordInput
         label="Новый пароль"
-        type="password"
         placeholder="Введите пароль"
         {...register("password")}
         error={errors.password?.message}
         helperText="Пароль не менее 6 символов, содержит заглавные буквы (A-Z)"
       />
 
-      <FormInput
+      <PasswordInput
         label="Подтвердите новый пароль"
-        type="password"
         placeholder="Подтвердите пароль"
         {...register("confirmPassword")}
         error={errors.confirmPassword?.message}

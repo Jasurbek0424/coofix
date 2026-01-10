@@ -1,56 +1,90 @@
 "use client";
-import { Button } from "@/components/ui/Buttons/Button";
-import { IconButton } from "@/components/ui/Icons/IconToggle";
-import { FiShoppingCart, FiBarChart2 } from "react-icons/fi";
-import { FaRegHeart } from "react-icons/fa";
-import ProductCard from "@/components/ui/Card/ProductCard";
-import Footer from "@/components/layout/Footer";
 
-import ThemeToggle from "@/components/ui/ToggleTheme/ThemeToggle";
+import { useEffect, useState } from "react";
 import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import {
+  HeroBanner,
+  ProductCategorySection,
+  AboutSection,
+  ProductsTabs,
+  NewsSection,
+} from "@/components/home";
+import { getProducts } from "@/api/products";
+import type { Product } from "@/types/product";
 
-import { Modal } from "@/components/ui/Modal";
-import { SMSVerificationForm } from "@/components/ui/Forms";
-import { useModal } from "@/hooks/useModal";
+const categories = [
+  { name: "Малярные товары", category: "malyarnye-tovary", link: "/catalog?category=malyarnye-tovary" },
+  { name: "Электрооборудование", category: "elektrooborudovanie", link: "/catalog?category=elektrooborudovanie" },
+  { name: "Спецодежда", category: "specodezhda", link: "/catalog?category=specodezhda" },
+  { name: "Для дома и дачи", category: "dlya-doma-i-dachi", link: "/catalog?category=dlya-doma-i-dachi" },
+  { name: "Сезонное", category: "sezonnoe", link: "/catalog?category=sezonnoe" },
+  { name: "Инструмент", category: "instrument", link: "/catalog?category=instrument" },
+];
 
 export default function HomePage() {
-  const { isOpen, open, close } = useModal();
+  const [categoryProducts, setCategoryProducts] = useState<Record<string, Product[]>>({});
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
-  const handleSubmit = async (data: unknown) => {
-    // API call
-    await console.log(data);
-    close();
-  };
+  useEffect(() => {
+    // Fetch products for each category
+    const fetchCategoryProducts = async () => {
+      setLoadingCategories(true);
+      const productsMap: Record<string, Product[]> = {};
+
+      try {
+        await Promise.all(
+          categories.map(async (cat) => {
+            try {
+              const response = await getProducts({
+                category: cat.category,
+                limit: 8,
+              });
+              if (response.success && response.products) {
+                productsMap[cat.category] = response.products;
+              }
+            } catch (error) {
+              console.error(`Error fetching products for ${cat.name}:`, error);
+              productsMap[cat.category] = [];
+            }
+          })
+        );
+        setCategoryProducts(productsMap);
+      } catch (error) {
+        console.error("Error fetching category products:", error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategoryProducts();
+  }, []);
 
   return (
-    <main className="">
+    <main className="min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto">
-        <button onClick={open}>Заказать звонок</button>
-        <Modal isOpen={isOpen} onClose={close} title="Вход">
-          <SMSVerificationForm onSubmit={handleSubmit} />
-        </Modal>
-        <h1 className="text-3xl dark:text-foreground">Главная</h1>
-        <Button variant="primary">ПЕРЕЙТИ К НОВОСТЯМ</Button>
-        <Button variant="secondary">ПРОДОЛЖИТЬ ПОКУПКИ</Button>
-        <Button variant="gray" disabled>
-          СОХРАНИТЬ ИЗМЕНЕНИЯ
-        </Button>
-        <Button variant="dark">ДАЛЕЕ</Button>
-        <IconButton variant="like" icon={FaRegHeart} />
-        <IconButton variant="cart" icon={FiShoppingCart} />
-        <div className="flex items-center gap-4 mt-2">
-          <IconButton variant="chart" icon={FiBarChart2} />
-        </div>
-        <ThemeToggle />
-        <ProductCard
-          title="Эмаль Condor ПФ-115 жёлтая 1,8 кг"
-          price={500}
-          oldPrice={720}
-          image="/products/condor.png"
-          variant="action"
+      
+      {/* Hero Banner Section */}
+      <HeroBanner />
+
+      {/* Product Category Sections */}
+      {categories.map((category) => (
+        <ProductCategorySection
+          key={category.category}
+          title={category.name}
+          products={categoryProducts[category.category] || []}
+          categoryLink={category.link}
         />
-      </div>
+      ))}
+
+      {/* About Us Section */}
+      <AboutSection />
+
+      {/* Products Tabs Section (New/Promotions/Best Sellers) */}
+      <ProductsTabs limit={8} />
+
+      {/* News Section */}
+      <NewsSection />
 
       <Footer />
     </main>

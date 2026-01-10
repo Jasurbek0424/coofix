@@ -13,7 +13,7 @@ export default function Footer() {
           {/* Column 1: Product Categories */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-gray-smoky">
-              Категории
+              Каталог
             </h3>
             <ul className="space-y-2">
               <li>

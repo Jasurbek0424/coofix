@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { FiChevronRight, FiMenu } from "react-icons/fi";
 import clsx from "clsx";
+import { getCategories } from "@/api/categories";
+import type { Category as ApiCategory } from "@/types/product";
 
 interface Subcategory {
   id: string;
@@ -18,8 +20,8 @@ interface Category {
   subcategories: Subcategory[];
 }
 
-// Sizning avvalgi javobingizdagi to'liq katalog ma'lumotlari shu yerda saqlangan
-const categories: Category[] = [
+// Fallback categories if API fails
+const fallbackCategories: Category[] = [
   // ... (Katalog ma'lumotlari joylashgan qismi)
   {
     id: "elektroinstrumenty",
@@ -299,11 +301,48 @@ const categories: Category[] = [
 export function CatalogDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>(fallbackCategories);
+  const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // setSelectedSubcategory ni o'chirib tashladim, chunki u faqat vizual effekt uchun ishlatilgan, 
-  // ammo funksional jihatdan kerak emas edi.
-  // const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null); 
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setIsLoading(true);
+        const apiCategories = await getCategories(null);
+        
+        if (apiCategories.length > 0) {
+          // Fetch subcategories for each category and transform to component format
+          const transformedCategories = await Promise.all(
+            apiCategories.map(async (apiCategory) => {
+              const subcategories = await getCategories(apiCategory._id);
+              
+              return {
+                id: apiCategory._id,
+                name: apiCategory.name,
+                href: `/catalog?category=${apiCategory.slug}`,
+                subcategories: subcategories.map((sub) => ({
+                  id: sub._id,
+                  name: sub.name,
+                  href: `/catalog?category=${apiCategory.slug}&sub=${sub.slug}`,
+                })),
+              };
+            })
+          );
+          
+          setCategories(transformedCategories);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        // Keep fallback categories if API fails
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const hoveredCategoryData = categories.find(
     (cat) => cat.id === hoveredCategory
