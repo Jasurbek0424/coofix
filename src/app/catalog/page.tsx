@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -14,7 +14,7 @@ import { getProducts } from "@/api/products";
 import ProductCard from "@/components/ui/Card/ProductCard";
 import type { Category, Product } from "@/types/product";
 
-export default function CatalogPage() {
+function CatalogContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
   const subParam = searchParams.get("sub");
@@ -295,3 +295,18 @@ export default function CatalogPage() {
   );
 }
 
+export default function CatalogPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-16 flex justify-center">
+          <Loader size="lg" />
+        </div>
+        <Footer />
+      </div>
+    }>
+      <CatalogContent />
+    </Suspense>
+  );
+}
