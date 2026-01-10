@@ -9,7 +9,7 @@ interface Props {
   activeIcon?: React.ComponentType<any>;
   active?: boolean;
   variant: "cart" | "like" | "chart";
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export function IconButton({
@@ -27,7 +27,7 @@ export function IconButton({
 
   return (
     <button
-      onClick={onClick}
+      onClick={(e) => onClick?.(e)}
       className={clsx(
         "p-3 transition-all duration-200 flex items-center justify-center cursor-pointer text-orange",
 

@@ -34,9 +34,9 @@ export function SuccessModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} showCloseButton={true}>
-      <div className="text-center space-y-6">
-        <h2 className="text-xl font-bold text-coal">{title}</h2>
-        <p className="text-coal whitespace-pre-line">{message}</p>
+      <div className="text-center space-y-6 text-foreground">
+        <h2 className="text-xl font-bold text-foreground">{title}</h2>
+        <p className="text-foreground whitespace-pre-line">{message}</p>
         <Button
           variant="primary"
           fullWidth

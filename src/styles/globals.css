@@ -62,3 +62,13 @@
 body {
   font-family: var(--font-noto), sans-serif;
 }
+
+/* Scrollbar hide utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
