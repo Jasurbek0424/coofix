@@ -93,7 +93,7 @@ export default function NewsSection({
                   href={`/news/${item.id}`}
                   className="group block"
                 >
-                  <div className="relative h-32 md:h-40 rounded-lg overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 mb-2">
+                  <div className="relative h-32 md:h-40 rounded-lg overflow-hidden bg-linear-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 mb-2">
                     {item.image ? (
                       <Image
                         src={item.image}
