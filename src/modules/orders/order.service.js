@@ -70,17 +70,53 @@ exports.createOrder = async (userId, address, phone) => {
   }
 };
 
-exports.getUserOrders = async (userId) => {
-  return Order.find({ user: userId })
-    .populate("items.product")
-    .sort({ createdAt: -1 });
+exports.getUserOrders = async (userId, page = 1, limit = 10) => {
+  page = parseInt(page);
+  limit = parseInt(limit);
+  const skip = (page - 1) * limit;
+
+  const [orders, total] = await Promise.all([
+    Order.find({ user: userId })
+      .populate("items.product")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Order.countDocuments({ user: userId })
+  ]);
+
+  return {
+    orders,
+    pagination: {
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / limit)
+    }
+  };
 };
 
-exports.getAllOrders = async () => {
-  return Order.find()
-    .populate("user")
-    .populate("items.product")
-    .sort({ createdAt: -1 });
+exports.getAllOrders = async (page = 1, limit = 10) => {
+  page = parseInt(page);
+  limit = parseInt(limit);
+  const skip = (page - 1) * limit;
+
+  const [orders, total] = await Promise.all([
+    Order.find()
+      .populate("user")
+      .populate("items.product")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Order.countDocuments()
+  ]);
+
+  return {
+    orders,
+    pagination: {
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / limit)
+    }
+  };
 };
 
 

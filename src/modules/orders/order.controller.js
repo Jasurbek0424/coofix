@@ -19,8 +19,9 @@ exports.createOrder = async (req, res) => {
 
 exports.getMyOrders = async (req, res) => {
   try {
-    const orders = await service.getUserOrders(req.user.id);
-    res.json({ success: true, orders });
+    const { page, limit } = req.query;
+    const result = await service.getUserOrders(req.user.id, page, limit);
+    res.json({ success: true, ...result });
 
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
@@ -29,8 +30,9 @@ exports.getMyOrders = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await service.getAllOrders();
-    res.json({ success: true, orders });
+    const { page, limit } = req.query;
+    const result = await service.getAllOrders(page, limit);
+    res.json({ success: true, ...result });
 
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
