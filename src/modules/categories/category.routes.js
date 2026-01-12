@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const controller = require('./category.controller');
 
+
+router.get('/tree', controller.getTree);
 /**
  * @swagger
  * components:
