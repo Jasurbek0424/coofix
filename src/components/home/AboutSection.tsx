@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/Buttons/Button";
+import AboutImg from "@/assets/aboutImg.png";
 
 export default function AboutSection() {
   return (
@@ -9,11 +11,14 @@ export default function AboutSection() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Image Section */}
-          <div className="relative h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden bg-gradient-to-br from-orange/20 to-coal/20">
-            {/* Placeholder for image - in real app, use Image component */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-6xl">🤝</div>
-            </div>
+          <div className="relative h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden">
+            <Image
+              src={AboutImg}
+              alt="О нас - COOFIX TOOLS"
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
 
           {/* Text Section */}

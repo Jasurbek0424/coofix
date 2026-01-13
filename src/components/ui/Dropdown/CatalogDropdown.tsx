@@ -301,7 +301,7 @@ const fallbackCategories: Category[] = [
 export function CatalogDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>(fallbackCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -335,7 +335,8 @@ export function CatalogDropdown() {
         }
       } catch (error) {
         console.error("Error fetching categories:", error);
-        // Keep fallback categories if API fails
+        // Fallback categories if API fails
+        setCategories(fallbackCategories);
       } finally {
         setIsLoading(false);
       }
@@ -416,8 +417,18 @@ export function CatalogDropdown() {
           }}
         >
           {/* Chap Sidebar - Asosiy Kategoriyalar */}
-          <div className="w-64 bg-dark border-r border-gray rounded-l-lg shrink-0">
-            {categories.map((category) => (
+          <div className="w-64 bg-dark border-r border-gray rounded-l-lg shrink-0 max-h-[70vh] overflow-y-auto">
+            {isLoading ? (
+              // Loading loader (3 nuqta)
+              <div className="flex items-center justify-center py-8">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-orange rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-orange rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-orange rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+              </div>
+            ) : (
+              categories.map((category) => (
               <Link
                 key={category.id}
                 href={category.href}
@@ -432,13 +443,14 @@ export function CatalogDropdown() {
                 <span>{category.name}</span>
                 <FiChevronRight size={16} />
               </Link>
-            ))}
+              ))
+            )}
           </div>
 
           {/* O'ng Panel - Subkategoriyalar */}
-          {hoveredCategoryData &&
+          {!isLoading && hoveredCategoryData &&
             hoveredCategoryData.subcategories.length > 0 && (
-              <div className="flex-1 bg-dark p-6 rounded-r-lg lg:w-[680px] xl:w-[1200px]">
+              <div className="flex-1 bg-dark p-6 rounded-r-lg lg:w-[680px] xl:w-[1200px] max-h-[70vh] overflow-y-auto">
                 <div className="grid grid-cols-2 gap-x-8 gap-y-2">
                   {/* Subkategoriyalarni ikki ustunga ajratib ko'rsatish */}
                   {splitSubcategories(hoveredCategoryData.subcategories).map(

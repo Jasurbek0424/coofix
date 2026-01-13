@@ -5,10 +5,14 @@ import CompareItems from "@/components/ui/CompareItems/CompareItems";
 
 export default function ComparePage() {
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className="flex-1 flex flex-col bg-background min-h-screen">
       <Header />
-      <CompareItems />
-      <Footer />
+      <div className="flex-1">
+        <CompareItems />
+      </div>
+      <div className="mt-auto">
+        <Footer />
+      </div>
     </div>
   );
 }

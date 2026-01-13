@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 import { FiHeart, FiBarChart2, FiShoppingCart } from "react-icons/fi";
 import { IoMdCheckboxOutline } from "react-icons/io";
@@ -27,7 +27,7 @@ interface ProductCardProps {
   inStock?: boolean;
 }
 
-export default function ProductCard({
+const ProductCard = memo(function ProductCard({
   product,
   variant,
   onClick,
@@ -106,10 +106,10 @@ export default function ProductCard({
       onClick={onClick}
       className="
         bg-white dark:bg-dark
-        rounded-xl p-4 w-[300px] cursor-pointer
+        rounded-2xl p-4 w-[300px] cursor-pointer
         transition-all duration-300 
-        border border-transparent 
-        hover:shadow-xl hover:-translate-y-1 hover:border-gray shadow-sm
+        border border-gray-200 dark:border-coal
+        shadow-lg hover:shadow-2xl hover:-translate-y-2 hover:border-orange/30
         block
       "
     >
@@ -242,4 +242,8 @@ export default function ProductCard({
       </div>
     </Link>
   );
-}
+});
+
+ProductCard.displayName = "ProductCard";
+
+export default ProductCard;

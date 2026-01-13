@@ -69,33 +69,37 @@ export default function NewsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="flex-1 flex flex-col bg-background min-h-screen">
         <Header />
-        <div className="container mx-auto px-4 py-16 flex justify-center">
+        <div className="flex-1 flex items-center justify-center">
           <Loader size="lg" />
         </div>
-        <Footer />
+        <div className="mt-auto">
+          <Footer />
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="flex-1 flex flex-col bg-background min-h-screen">
         <Header />
-        <div className="container mx-auto px-4 py-16 text-center">
+        <div className="flex-1 flex items-center justify-center">
           <p className="text-red-500 text-lg">{error}</p>
         </div>
-        <Footer />
+        <div className="mt-auto">
+          <Footer />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex-1 flex flex-col bg-background min-h-screen">
       <Header />
       
-      <main className="container mx-auto px-4 py-8 lg:py-12">
+      <main className="flex-1 container mx-auto px-4 py-8 lg:py-12">
         <Breadcrumbs items={breadcrumbs} />
         <h1 className="text-3xl md:text-4xl font-bold text-coal dark:text-foreground mb-8">
           Новости
@@ -158,7 +162,9 @@ export default function NewsPage() {
         )}
       </main>
 
-      <Footer />
+      <div className="mt-auto">
+        <Footer />
+      </div>
     </div>
   );
 }

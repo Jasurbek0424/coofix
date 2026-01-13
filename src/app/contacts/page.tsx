@@ -4,10 +4,14 @@ import Header from "@/components/layout/Header";
 
 export default function ContactsPage() {
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className="flex-1 flex flex-col bg-background min-h-screen">
       <Header />
-      <Contacts />
-      <Footer />
+      <div className="flex-1">
+        <Contacts />
+      </div>
+      <div className="mt-auto">
+        <Footer />
+      </div>
     </div>
   );
 }
