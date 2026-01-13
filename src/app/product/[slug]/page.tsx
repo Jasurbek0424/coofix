@@ -14,10 +14,14 @@ import { IconButton } from "@/components/ui/Icons/IconToggle";
 import { FiHeart, FiBarChart2 } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { getProductBySlug, getProducts } from "@/api/products";
+import { getReviews, createOrUpdateReview, deleteReview } from "@/api/reviews";
 import { useCart } from "@/store/useCart";
 import { useFavorites } from "@/store/useFavorites";
 import { useCompare } from "@/store/useCompare";
+import { useUser } from "@/store/useUser";
+import { ReviewForm, ReviewList } from "@/components/ui/Reviews";
 import type { Product } from "@/types/product";
+import type { Review } from "@/api/reviews";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -25,11 +29,15 @@ export default function ProductDetailPage() {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [userReview, setUserReview] = useState<Review | null>(null);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<"description" | "characteristics" | "delivery" | "reviews">("description");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const { user } = useUser();
 
   const { addItem, isInCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -41,36 +49,38 @@ export default function ProductDetailPage() {
         setIsLoading(true);
         setError(null);
 
-        const productData = await getProductBySlug(slug);
+        // Optimized: Fetch product and similar products in parallel
+        const productPromise = getProductBySlug(slug);
+        
+        // Start fetching product first
+        const productData = await productPromise;
         setProduct(productData);
+        setIsLoading(false); // Show product immediately
 
         if (productData) {
-          // Fetch similar products (same category)
-          const similarResponse = await getProducts({
+          // Fetch similar products in background (lazy load)
+          // Don't block the main product display
+          getProducts({
             category: productData.category.slug,
-            limit: 4,
-          });
-          if (similarResponse.success) {
-            setSimilarProducts(
-              similarResponse.products.filter((p) => p._id !== productData._id).slice(0, 4)
-            );
-          }
-
-          // Fetch related products (same brand or category)
-          const relatedResponse = await getProducts({
-            category: productData.category.slug,
-            limit: 8,
-          });
-          if (relatedResponse.success) {
-            setRelatedProducts(
-              relatedResponse.products.filter((p) => p._id !== productData._id).slice(0, 4)
-            );
-          }
+            limit: 10,
+          })
+            .then((similarResponse) => {
+              if (similarResponse.success) {
+                // Filter products to ensure they belong to the same category and exclude current product
+                const filtered = similarResponse.products.filter(
+                  (p) => p._id !== productData._id && p.category?.slug === productData.category.slug
+                );
+                setSimilarProducts(filtered.slice(0, 3));
+              }
+            })
+            .catch((err) => {
+              console.error("Error fetching similar products:", err);
+              // Don't show error to user, just log it
+            });
         }
       } catch (err) {
         console.error("Error fetching product:", err);
         setError("Товар не найден");
-      } finally {
         setIsLoading(false);
       }
     };
@@ -80,31 +90,78 @@ export default function ProductDetailPage() {
     }
   }, [slug]);
 
+  // Fetch reviews when product is loaded or reviews tab is active
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!product?._id) return;
+      
+      setIsLoadingReviews(true);
+      try {
+        const fetchedReviews = await getReviews(product._id);
+        setReviews(fetchedReviews);
+        
+        // Find user's review if authenticated
+        if (user?._id) {
+          const review = fetchedReviews.find((r) => r.userId === user._id);
+          setUserReview(review || null);
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      } finally {
+        setIsLoadingReviews(false);
+      }
+    };
+
+    if (product?._id && activeTab === "reviews") {
+      fetchReviews();
+    }
+  }, [product?._id, activeTab, user?._id]);
+
+  const handleReviewSubmitted = async (review: Review) => {
+    // Refresh reviews list
+    if (product?._id) {
+      const fetchedReviews = await getReviews(product._id);
+      setReviews(fetchedReviews);
+      setUserReview(review);
+    }
+  };
+
+  const handleReviewDeleted = async (reviewId: string) => {
+    setReviews((prev) => prev.filter((r) => r._id !== reviewId));
+    setUserReview(null);
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="flex-1 flex flex-col bg-background min-h-screen">
         <Header />
-        <div className="container mx-auto px-4 py-16 flex justify-center">
+        <div className="flex-1 flex items-center justify-center">
           <Loader size="lg" />
         </div>
-        <Footer />
+        <div className="mt-auto">
+          <Footer />
+        </div>
       </div>
     );
   }
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="flex-1 flex flex-col bg-background min-h-screen">
         <Header />
-        <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold text-coal dark:text-foreground mb-4">
-            Товар не найден
-          </h1>
-          <Link href="/catalog">
-            <Button variant="primary">Вернуться в каталог</Button>
-          </Link>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-coal dark:text-foreground mb-4">
+              Товар не найден
+            </h1>
+            <Link href="/catalog">
+              <Button variant="primary">Вернуться в каталог</Button>
+            </Link>
+          </div>
         </div>
-        <Footer />
+        <div className="mt-auto">
+          <Footer />
+        </div>
       </div>
     );
   }
@@ -128,10 +185,10 @@ export default function ProductDetailPage() {
   const currentImage = images[currentImageIndex] || null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex-1 flex flex-col bg-background min-h-screen">
       <Header />
       
-      <main className="container mx-auto px-4 py-8 lg:py-12">
+      <main className="flex-1 container mx-auto px-4 py-8 lg:py-12">
         <Breadcrumbs items={breadcrumbs} />
 
         {/* Product Main Section */}
@@ -322,39 +379,45 @@ export default function ProductDetailPage() {
             )}
 
             {activeTab === "reviews" && (
-              <div className="text-center py-8 text-gray-smoky">
-                Отзывов пока нет. Будьте первым!
+              <div className="space-y-8">
+                {/* Review Form */}
+                <ReviewForm
+                  productId={product._id}
+                  onReviewSubmitted={handleReviewSubmitted}
+                  existingReview={userReview}
+                />
+
+                {/* Reviews List */}
+                {isLoadingReviews ? (
+                  <div className="flex justify-center py-8">
+                    <Loader size="md" />
+                  </div>
+                ) : (
+                  <div>
+                    <h3 className="text-xl font-semibold text-coal dark:text-foreground mb-4">
+                      Отзывы ({reviews.length})
+                    </h3>
+                    <ReviewList
+                      reviews={reviews}
+                      onReviewDeleted={handleReviewDeleted}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
 
-        {/* Similar Products */}
+        {/* Similar Products - 3 ta o'xshash product */}
         {similarProducts.length > 0 && (
-          <section className="mb-12">
+          <section className="mt-12 mb-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl md:text-3xl font-bold text-coal dark:text-foreground">
                 Похожие товары
               </h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               {similarProducts.map((item) => (
-                <ProductCard key={item._id} product={item} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Related Products */}
-        {relatedProducts.length > 0 && (
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl md:text-3xl font-bold text-coal dark:text-foreground">
-                С этим товаром покупают
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {relatedProducts.map((item) => (
                 <ProductCard key={item._id} product={item} />
               ))}
             </div>
@@ -362,7 +425,9 @@ export default function ProductDetailPage() {
         )}
       </main>
 
-      <Footer />
+      <div className="mt-auto">
+        <Footer />
+      </div>
     </div>
   );
 }

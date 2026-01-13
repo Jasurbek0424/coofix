@@ -7,10 +7,14 @@ import Header from "@/components/layout/Header";
 
 export default function AboutPage() {
   return (
-    <>
+    <div className="flex-1 flex flex-col bg-background min-h-screen">
       <Header />
-      <About />
-      <Footer />
-    </>
+      <div className="flex-1">
+        <About />
+      </div>
+      <div className="mt-auto">
+        <Footer />
+      </div>
+    </div>
   );
 }

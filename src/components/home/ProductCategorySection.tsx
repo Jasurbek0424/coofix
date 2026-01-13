@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useMemo } from "react";
 import Link from "next/link";
 import ProductCard from "@/components/ui/Card/ProductCard";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
@@ -12,7 +12,7 @@ interface ProductCategorySectionProps {
   categoryLink?: string;
 }
 
-export default function ProductCategorySection({
+const ProductCategorySection = memo(function ProductCategorySection({
   title,
   products,
   categoryLink,
@@ -54,7 +54,10 @@ export default function ProductCategorySection({
     setScrollPosition(finalPosition);
   };
 
-  if (products.length === 0) return null;
+  // Optimized: Memoize products list to avoid unnecessary re-renders
+  const memoizedProducts = useMemo(() => products, [products]);
+
+  if (memoizedProducts.length === 0) return null;
 
   return (
     <section className="bg-white dark:bg-dark py-8 lg:py-12">
@@ -80,7 +83,7 @@ export default function ProductCategorySection({
             className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
             onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
           >
-            {products.map((product) => (
+            {memoizedProducts.map((product) => (
               <div key={product._id} className="min-w-[260px] md:min-w-[280px] flex-shrink-0">
                 <ProductCard product={product} />
               </div>
@@ -88,7 +91,7 @@ export default function ProductCategorySection({
           </div>
 
           {/* Navigation Arrows */}
-          {products.length > visibleCards && (
+          {memoizedProducts.length > visibleCards && (
             <>
               <button
                 onClick={() => scroll("left")}
@@ -110,5 +113,9 @@ export default function ProductCategorySection({
       </div>
     </section>
   );
-}
+});
+
+ProductCategorySection.displayName = "ProductCategorySection";
+
+export default ProductCategorySection;
 
