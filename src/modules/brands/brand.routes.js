@@ -18,10 +18,17 @@ const controller = require('./brand.controller');
  *           type: string
  *           example: apple
  *         image:
- *           type: string
+ *           type: object
  *           nullable: true
- *           description: URL логотипа бренда
- *           example: https://example.com/brands/apple-logo.png
+ *           description: Объект логотипа
+ *           properties:
+ *             url:
+ *               type: string
+ *             publicId:
+ *               type: string
+ *           example:
+ *             url: "https://example.com/brands/apple-logo.png"
+ *             publicId: "brands/apple-uid"
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -43,10 +50,15 @@ const controller = require('./brand.controller');
  *           maxLength: 100
  *           example: Samsung
  *         image:
- *           type: string
+ *           type: object
  *           nullable: true
- *           description: URL логотипа бренда (опционально)
- *           example: https://example.com/brands/samsung.png
+ *           description: Объект логотипа (опционально)
+ *           properties:
+ *             url: { type: string }
+ *             publicId: { type: string }
+ *           example:
+ *             url: "https://example.com/brands/samsung.png"
+ *             publicId: "brands/samsung-uid"
  *
  *     BrandUpdateRequest:
  *       type: object
@@ -56,9 +68,11 @@ const controller = require('./brand.controller');
  *           minLength: 2
  *           example: Samsung Electronics
  *         image:
- *           type: string
+ *           type: object
  *           nullable: true
- *           example: https://example.com/brands/samsung-new.png
+ *           properties:
+ *             url: { type: string }
+ *             publicId: { type: string }
  *
  *   responses:
  *     BrandSuccess:

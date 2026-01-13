@@ -42,7 +42,11 @@ const checkRole = require('../../core/middleware/role');
  *                 description: ID бренда
  *               images:
  *                 type: array
- *                 items: { type: string }
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     url: { type: string }
+ *                     publicId: { type: string }
  *               characteristics:
  *                 type: object
  *                 additionalProperties: { type: string }
@@ -84,7 +88,13 @@ router.post('/', auth, checkRole('admin'), controller.create);
  *               name: { type: string }
  *               price: { type: number }
  *               oldPrice: { type: number, nullable: true }
- *               images: { type: array, items: { type: string } }
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     url: { type: string }
+ *                     publicId: { type: string }
  *               characteristics: { type: object }
  *               quantity: { type: integer }
  *               isNew: { type: boolean }

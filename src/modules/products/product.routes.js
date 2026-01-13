@@ -34,8 +34,13 @@ const controller = require('./product.controller');
  *         images:
  *           type: array
  *           items:
- *             type: string
- *           example: ["https://firebasestorage.googleapis.com/..."]
+ *             type: object
+ *             properties:
+ *               url: { type: string }
+ *               publicId: { type: string }
+ *           example:
+ *             - url: "https://cloudinary.com/..."
+ *               publicId: "products/iphone-uid"
  *         characteristics:
  *           type: object
  *           additionalProperties:

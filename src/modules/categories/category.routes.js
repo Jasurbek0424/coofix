@@ -27,9 +27,15 @@ router.get('/tree', controller.getTree);
  *             - type: null
  *           description: ID родительской категории (null = корневая)
  *         image:
- *           type: string
+ *           type: object
  *           nullable: true
- *           example: "https://example.com/categories/smartphones.jpg"
+ *           properties:
+ *             url:
+ *               type: string
+ *               example: "https://example.com/categories/smartphones.jpg"
+ *             publicId:
+ *               type: string
+ *               example: "ecommerce/categories/smartphones_uid"
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -56,10 +62,15 @@ router.get('/tree', controller.getTree);
  *           description: ID родительской категории (если подкатегория)
  *           example: 507f191e810c19729de860ea
  *         image:
- *           type: string
+ *           type: object
  *           nullable: true
- *           description: URL изображения категории
- *           example: https://example.com/categories/laptops.jpg
+ *           description: Объект изображения
+ *           properties:
+ *             url: { type: string }
+ *             publicId: { type: string }
+ *           example:
+ *             url: "https://example.com/categories/laptops.jpg"
+ *             publicId: "categories/laptops-uid"
  *
  *     CategoryUpdateRequest:
  *       type: object
@@ -71,8 +82,11 @@ router.get('/tree', controller.getTree);
  *           type: string
  *           nullable: true
  *         image:
- *           type: string
+ *           type: object
  *           nullable: true
+ *           properties:
+ *             url: { type: string }
+ *             publicId: { type: string }
  *
  *   responses:
  *     CategorySuccess:
