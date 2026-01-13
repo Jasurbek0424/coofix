@@ -1,6 +1,7 @@
 const Category = require('./category.model');
 const Product = require('../products/product.model');
 const makeSlug = require('../../core/utils/slugify');
+const cloudinary = require('cloudinary').v2;
 
 exports.create = async (req, res) => {
   try {
@@ -32,7 +33,7 @@ exports.create = async (req, res) => {
       name: name.trim(),
       slug,
       parent: parent || null,
-      image: image || null
+      image: image || null // image теперь объект { url, publicId }
     });
 
     res.status(201).json({ success: true, category });
@@ -217,11 +218,18 @@ exports.remove = async (req, res) => {
       });
     }
 
-    const deleted = await Category.findByIdAndDelete(categoryId);
+    const category = await Category.findById(categoryId);
 
-    if (!deleted) {
+    if (!category) {
       return res.status(404).json({ success: false, message: 'Категория не найдена' });
     }
+
+    // Удаляем картинку из Cloudinary, если есть
+    if (category.image && category.image.publicId) {
+      await cloudinary.uploader.destroy(category.image.publicId);
+    }
+
+    await category.deleteOne();
 
     res.json({ success: true });
 
