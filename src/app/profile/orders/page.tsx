@@ -138,10 +138,10 @@ export default function OrderHistoryPage() {
                       key={index}
                       className="flex items-center gap-4 pb-3 border-b border-gray/50 last:border-0"
                     >
-                      <div className="flex-shrink-0 w-16 h-16 bg-gray rounded overflow-hidden">
+                      <div className="shrink-0 w-16 h-16 bg-gray rounded overflow-hidden">
                         {item.product.images?.[0] ? (
                           <Image
-                            src={item.product.images[0]}
+                            src={typeof item.product.images[0] === "string" ? item.product.images[0] : ""}
                             alt={item.product.name}
                             width={64}
                             height={64}

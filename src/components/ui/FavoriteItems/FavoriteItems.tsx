@@ -44,7 +44,7 @@ export default function FavoriteItems() {
               <div className="relative h-48 flex justify-center items-center mb-4">
                  <Link href={`/product/${product.slug}`} className="h-full w-full flex justify-center">
                     <Image
-                      src={product.images?.[0] || "/placeholder-product.png"}
+                      src={typeof product.images?.[0] === "string" ? product.images[0] : "/placeholder-product.png"}
                       alt={product.name}
                       width={180}
                       height={180}

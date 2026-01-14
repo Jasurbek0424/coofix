@@ -132,7 +132,7 @@ export default function CartItems() {
                     {/* Rasm va Link */}
                     <Link href={`/product/${item.product.slug}`} className="shrink-0 mr-4">
                         <Image
-                            src={item.product.images?.[0] || "/placeholder-product.png"}
+                            src={typeof item.product.images?.[0] === "string" ? item.product.images[0] : "/placeholder-product.png"}
                             alt={item.product.name}
                             width={80}
                             height={80}
