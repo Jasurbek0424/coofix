@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "../styles/globals.css";
+import { MarketplaceButtons } from "@/components/shared/MarketplaceButtons";
 import { Noto_Sans } from "next/font/google";
 
 import { ThemeProvider } from "next-themes";
@@ -72,6 +73,7 @@ export default function RootLayout({
       <body className={`${noto.variable} antialiased h-full flex flex-col`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
+          <MarketplaceButtons />
         </ThemeProvider>
       </body>
     </html>
