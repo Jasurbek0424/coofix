@@ -79,7 +79,7 @@ export default function CompareItems() {
                     </button>
                     <Link href={`/product/${product.slug}`}>
                       <Image
-                        src={product.images?.[0] || "/placeholder-product.png"}
+                        src={typeof product.images?.[0] === 'string' ? product.images[0] : "/placeholder-product.png"}
                         alt={product.name}
                         width={100}
                         height={100}

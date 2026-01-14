@@ -184,7 +184,7 @@ export function SearchBar({
               >
                 <div className="w-16 h-16 shrink-0 relative">
                   <Image
-                    src={product.images?.[0] || "/placeholder-product.png"}
+                    src={typeof product.images?.[0] === "string" ? product.images[0] : "/placeholder-product.png"}
                     alt={product.name}
                     fill
                     className="object-contain rounded"
