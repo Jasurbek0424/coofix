@@ -58,25 +58,26 @@ export default function ProductDetailPage() {
         setIsLoading(false); // Show product immediately
 
         if (productData) {
-          // Fetch similar products in background (lazy load)
-          // Don't block the main product display
-          getProducts({
-            category: productData.category.slug,
-            limit: 10,
-          })
-            .then((similarResponse) => {
-              if (similarResponse.success) {
-                // Filter products to ensure they belong to the same category and exclude current product
-                const filtered = similarResponse.products.filter(
-                  (p) => p._id !== productData._id && p.category?.slug === productData.category.slug
-                );
-                setSimilarProducts(filtered.slice(0, 3));
-              }
+          // Fetch similar products in background (lazy load) - only if category exists
+          if (productData.category?.slug) {
+            getProducts({
+              category: productData.category.slug,
+              limit: 10,
             })
-            .catch((err) => {
-              console.error("Error fetching similar products:", err);
-              // Don't show error to user, just log it
-            });
+              .then((similarResponse) => {
+                if (similarResponse.success) {
+                  // Filter products to ensure they belong to the same category and exclude current product
+                  const filtered = similarResponse.products.filter(
+                    (p) => p._id !== productData._id && p.category?.slug === productData.category?.slug
+                  );
+                  setSimilarProducts(filtered.slice(0, 3));
+                }
+              })
+              .catch((err) => {
+                console.error("Error fetching similar products:", err);
+                // Don't show error to user, just log it
+              });
+          }
         }
       } catch (err) {
         console.error("Error fetching product:", err);
@@ -173,14 +174,25 @@ export default function ProductDetailPage() {
   const breadcrumbs = [
     { label: "Главная", href: "/" },
     { label: "Каталог", href: "/catalog" },
-    { label: product.category.name, href: `/catalog?category=${product.category.slug}` },
+    ...(product.category ? [{ label: product.category.name, href: `/catalog?category=${product.category.slug}` }] : []),
     { label: product.name },
   ];
 
+  // Extract image URLs from images array (supports both string and object format)
+  const getImageUrl = (img: string | { url: string; publicId?: string }): string | null => {
+    if (typeof img === "string") {
+      return img.trim() || null;
+    }
+    if (img && typeof img === "object" && "url" in img) {
+      return img.url?.trim() || null;
+    }
+    return null;
+  };
+
   const images = product.images && product.images.length > 0 
-    ? product.images.filter((img) => {
-        return typeof img === "string" && img.trim() !== "";
-      })
+    ? product.images
+        .map(getImageUrl)
+        .filter((url): url is string => url !== null)
     : [];
   const currentImage = images[currentImageIndex] || null;
 
@@ -197,7 +209,7 @@ export default function ProductDetailPage() {
           <div className="space-y-4">
             {/* Main Image */}
             <div className="relative aspect-square bg-white dark:bg-dark rounded-lg overflow-hidden border border-gray-200 dark:border-coal">
-              {currentImage && typeof currentImage === "string" && currentImage.trim() !== "" ? (
+              {currentImage ? (
                 <Image
                   src={currentImage}
                   alt={product.name}
@@ -225,7 +237,7 @@ export default function ProductDetailPage() {
                         : "border-gray-200 dark:border-coal"
                     }`}
                   >
-                    {image && typeof image === "string" && image.trim() !== "" ? (
+                    {image ? (
                       <Image
                         src={image}
                         alt={`${product.name} ${index + 1}`}

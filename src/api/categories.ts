@@ -46,3 +46,22 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
   }
 }
 
+// GET /categories/tree - Get categories tree structure
+export interface CategoriesTreeResponse {
+  success: boolean;
+  tree?: Category[];
+  message?: string;
+}
+
+export async function getCategoriesTree(): Promise<Category[]> {
+  try {
+    const response = await api.get<CategoriesTreeResponse>("/categories/tree");
+    if (response.data.success && Array.isArray(response.data.tree)) {
+      return response.data.tree;
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching categories tree:", error);
+    return [];
+  }
+}

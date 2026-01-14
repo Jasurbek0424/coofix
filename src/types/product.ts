@@ -3,10 +3,11 @@ export interface Category {
   name: string;
   slug: string;
   parent: string | null;
-  image: string | null;
+  image: string | null | { url: string; publicId: string };
   createdAt: string;
   updatedAt: string;
   __v: number;
+  children?: Category[]; // For tree structure
 }
 
 export interface Brand {
@@ -19,6 +20,13 @@ export interface Brand {
   __v: number;
 }
 
+export interface ProductImage {
+  url: string;
+  publicId?: string;
+  _id?: string;
+  id?: string;
+}
+
 export interface Product {
   _id: string;
   name: string;
@@ -26,9 +34,9 @@ export interface Product {
   description: string;
   price: number;
   oldPrice: number | null;
-  category: Category;
+  category: Category | null;
   brand: Brand;
-  images: string[];
+  images: (string | ProductImage)[];
   characteristics?: Record<string, string>;
   inStock: boolean;
   quantity: number;

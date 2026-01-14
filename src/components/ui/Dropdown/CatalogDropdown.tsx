@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { FiChevronRight, FiMenu } from "react-icons/fi";
 import clsx from "clsx";
-import { getCategories } from "@/api/categories";
+import { getCategoriesTree } from "@/api/categories";
 import type { Category as ApiCategory } from "@/types/product";
 
 interface Subcategory {
@@ -305,36 +305,32 @@ export function CatalogDropdown() {
   const [isLoading, setIsLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch categories from API
+  // Fetch categories tree from API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         setIsLoading(true);
-        const apiCategories = await getCategories(null);
+        const apiCategoriesTree = await getCategoriesTree();
         
-        if (apiCategories.length > 0) {
-          // Fetch subcategories for each category and transform to component format
-          const transformedCategories = await Promise.all(
-            apiCategories.map(async (apiCategory) => {
-              const subcategories = await getCategories(apiCategory._id);
-              
-              return {
-                id: apiCategory._id,
-                name: apiCategory.name,
-                href: `/catalog?category=${apiCategory.slug}`,
-                subcategories: subcategories.map((sub) => ({
-                  id: sub._id,
-                  name: sub.name,
-                  href: `/catalog?category=${apiCategory.slug}&sub=${sub.slug}`,
-                })),
-              };
-            })
-          );
+        if (apiCategoriesTree.length > 0) {
+          // Transform tree format to component format
+          const transformedCategories = apiCategoriesTree.map((apiCategory) => {
+            return {
+              id: apiCategory._id,
+              name: apiCategory.name,
+              href: `/catalog?category=${apiCategory.slug}`,
+              subcategories: (apiCategory.children || []).map((sub) => ({
+                id: sub._id,
+                name: sub.name,
+                href: `/catalog?category=${apiCategory.slug}&sub=${sub.slug}`,
+              })),
+            };
+          });
           
           setCategories(transformedCategories);
         }
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching categories tree:", error);
         // Fallback categories if API fails
         setCategories(fallbackCategories);
       } finally {
