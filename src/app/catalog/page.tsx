@@ -53,7 +53,7 @@ function CatalogContent() {
 
         // If category or filter params exist, fetch products
         if (categoryParam || filterParam || searchParam) {
-          const category = mainCategories.find(c => c.slug === categoryParam);
+          const category = categories.find(c => c.slug === categoryParam);
           if (categoryParam && category) {
             setSelectedCategory(category);
           }
@@ -233,7 +233,7 @@ function CatalogContent() {
                       {category.image && (
                         <div className="relative h-48 w-full bg-gray-100 dark:bg-coal">
                           <Image
-                            src={category.image}
+                            src={typeof category.image === "string" ? category.image : category.image.url}
                             alt={category.name}
                             fill
                             className="object-cover"
