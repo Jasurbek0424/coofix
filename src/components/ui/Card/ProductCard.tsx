@@ -10,10 +10,21 @@ import { IoMdCheckboxOutline } from "react-icons/io";
 import { FaHeart } from "react-icons/fa";
 
 import { IconButton } from "../Icons/IconToggle";
-import type { Product } from "@/types/product";
+import type { Product, ProductImage } from "@/types/product";
 import { useCart } from "@/store/useCart";
 import { useFavorites } from "@/store/useFavorites";
 import { useCompare } from "@/store/useCompare"; // ✨ Qiyoslash store'i
+
+// Helper function to extract image URL
+const getImageUrl = (img: string | ProductImage): string | null => {
+  if (typeof img === "string") {
+    return img.trim() || null;
+  }
+  if (img && typeof img === "object" && "url" in img) {
+    return img.url?.trim() || null;
+  }
+  return null;
+};
 
 interface ProductCardProps {
   product?: Product;
@@ -55,9 +66,11 @@ const ProductCard = memo(function ProductCard({
   const [imageError, setImageError] = useState(false);
   
   // Get product data (legacy or new API)
-  const productImage = isLegacyMode 
+  const productImageRaw = isLegacyMode 
     ? legacyImage 
     : (product?.images?.[0] || null);
+  
+  const productImage = productImageRaw ? getImageUrl(productImageRaw) : null;
   
   const title = isLegacyMode ? legacyTitle! : (product?.name || "");
   const price = isLegacyMode ? legacyPrice! : (product?.price || 0);
@@ -88,9 +101,10 @@ const ProductCard = memo(function ProductCard({
 
   // Update image when product changes
   useEffect(() => {
-    const newImage = isLegacyMode 
+    const newImageRaw = isLegacyMode 
       ? legacyImage 
       : (product?.images?.[0] || null);
+    const newImage = newImageRaw ? getImageUrl(newImageRaw) : null;
     setCurrentImage(newImage || null);
     setImageError(false);
   }, [product?.images, legacyImage, isLegacyMode]);

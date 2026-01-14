@@ -9,7 +9,7 @@ import Footer from "@/components/layout/Footer";
 import { Loader } from "@/components/shared/Loader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import { getCategories } from "@/api/categories";
+import { getCategoriesTree } from "@/api/categories";
 import { getProducts } from "@/api/products";
 import ProductCard from "@/components/ui/Card/ProductCard";
 import type { Category, Product } from "@/types/product";
@@ -37,21 +37,16 @@ function CatalogContent() {
         setIsLoading(true);
         setError(null);
 
-        // Fetch main categories (parent is null)
-        const mainCategories = await getCategories(null);
-        setCategories(mainCategories);
+        // Fetch categories tree from API
+        const categoriesTree = await getCategoriesTree();
+        setCategories(categoriesTree);
 
-        // Fetch subcategories for each main category
-        const subcategoriesPromises = mainCategories.map(async (category) => {
-          const subs = await getCategories(category._id);
-          return { categoryId: category._id, subcategories: subs };
-        });
-
-        const subcategoriesResults = await Promise.all(subcategoriesPromises);
+        // Build subcategories map from tree structure
         const subcategoriesMap: Record<string, Category[]> = {};
-        
-        subcategoriesResults.forEach(({ categoryId, subcategories }) => {
-          subcategoriesMap[categoryId] = subcategories;
+        categoriesTree.forEach((category) => {
+          if (category.children && category.children.length > 0) {
+            subcategoriesMap[category._id] = category.children;
+          }
         });
 
         setSubcategoriesMap(subcategoriesMap);
