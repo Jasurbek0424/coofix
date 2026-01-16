@@ -89,7 +89,7 @@ export const MarketplaceButtons = () => {
         }
       `}</style>
       <div className="fixed right-2 sm:right-4 top-[50%] -translate-y-1/2 z-40 flex flex-col gap-2 sm:gap-3">
-        {marketplaces.map((market, index) => (
+        {marketplaces.map((market) => (
           <Link
             key={market.name}
             href={market.url}
