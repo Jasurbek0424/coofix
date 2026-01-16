@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FiStar, FiTrash2 } from "react-icons/fi";
+import { FiStar, FiTrash2, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { useUser } from "@/store/useUser";
 import { deleteReview } from "@/api/reviews";
 import type { Review } from "@/api/reviews";
@@ -17,6 +17,7 @@ export default function ReviewList({
 }: ReviewListProps) {
   const { user } = useUser();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [expandedReviews, setExpandedReviews] = useState<Set<string>>(new Set());
 
   const handleDelete = async (reviewId: string) => {
     if (!confirm("Вы уверены, что хотите удалить этот отзыв?")) {
@@ -99,9 +100,45 @@ export default function ReviewList({
                 </button>
               )}
             </div>
-            <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
-              {review.comment}
-            </p>
+            {review.comment && (
+              <div>
+                <div
+                  className={`text-gray-600 dark:text-gray-400 whitespace-pre-wrap transition-all duration-300 ${
+                    expandedReviews.has(review._id)
+                      ? ""
+                      : "line-clamp-1"
+                  }`}
+                >
+                  {review.comment}
+                </div>
+                {review.comment.length > 50 && (
+                  <button
+                    onClick={() => {
+                      const newExpanded = new Set(expandedReviews);
+                      if (newExpanded.has(review._id)) {
+                        newExpanded.delete(review._id);
+                      } else {
+                        newExpanded.add(review._id);
+                      }
+                      setExpandedReviews(newExpanded);
+                    }}
+                    className="mt-2 flex items-center gap-1 text-orange hover:text-orange/80 text-sm transition-colors"
+                  >
+                    {expandedReviews.has(review._id) ? (
+                      <>
+                        <span>Свернуть</span>
+                        <FiChevronUp className="w-4 h-4" />
+                      </>
+                    ) : (
+                      <>
+                        <span>Развернуть</span>
+                        <FiChevronDown className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
             {review.updatedAt !== review.createdAt && (
               <p className="text-xs text-gray-smoky mt-2">
                 (Отредактировано)

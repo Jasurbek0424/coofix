@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import ProductCard from "@/components/ui/Card/ProductCard";
 import { useProducts } from "@/store/useProducts";
+import { useCache } from "@/store/useCache";
 import { Loader } from "@/components/shared/Loader";
 import type { Product } from "@/types/product";
 
@@ -15,6 +16,7 @@ interface ProductsTabsProps {
 export default function ProductsTabs({ limit = 8 }: ProductsTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>("new");
   const { products, isLoading, fetchProducts } = useProducts();
+  const cache = useCache();
 
   useEffect(() => {
     const filterMap: Record<TabType, string> = {
@@ -24,14 +26,27 @@ export default function ProductsTabs({ limit = 8 }: ProductsTabsProps) {
     };
 
     const loadProducts = async () => {
-      await fetchProducts({
-        filter: filterMap[activeTab],
+      const filter = filterMap[activeTab];
+      const cacheKey = `filtered_${filter}_${limit}`;
+      
+      // Check cache first
+      const cachedData = cache.getFilteredProducts(cacheKey);
+      if (cachedData) {
+        // Use cached data - we'll filter it in useMemo
+        return;
+      }
+      
+      // Fetch if not in cache
+      const response = await fetchProducts({
+        filter: filter,
         limit: limit * 2, // Fetch more to filter client-side
       });
+      
+      // Cache will be handled by useProducts store if needed
     };
 
     loadProducts();
-  }, [activeTab, limit, fetchProducts]);
+  }, [activeTab, limit, fetchProducts, cache]);
 
   // Optimized: Use useMemo to avoid unnecessary recalculations
   const localProducts = useMemo(() => {

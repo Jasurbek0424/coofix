@@ -1,78 +1,135 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import {
   HeroBanner,
   ProductCategorySection,
-  AboutSection,
-  ProductsTabs,
-  NewsSection,
 } from "@/components/home";
 import { getProducts } from "@/api/products";
 import { getCategories } from "@/api/categories";
 import { Loader } from "@/components/shared/Loader";
+import { useCache } from "@/store/useCache";
 import type { Product } from "@/types/product";
 import type { Category } from "@/types/product";
+
+// Lazy load non-critical sections
+const LazyAboutSection = lazy(() => 
+  import("@/components/home/AboutSection").then((mod) => ({ default: mod.default }))
+);
+const LazyProductsTabs = lazy(() => 
+  import("@/components/home/ProductsTabs").then((mod) => ({ default: mod.default }))
+);
+const LazyNewsSection = lazy(() => 
+  import("@/components/home/NewsSection").then((mod) => ({ default: mod.default }))
+);
 
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryProducts, setCategoryProducts] = useState<Record<string, Product[]>>({});
   const [loadingCategories, setLoadingCategories] = useState(true);
+  
+  const cache = useCache();
 
   useEffect(() => {
-    // Optimized: Progressive loading - first categories, then products
+    // Optimized: Progressive loading with cache
     const fetchCategoryProducts = async () => {
       setLoadingCategories(true);
       const productsMap: Record<string, Product[]> = {};
 
       try {
-        // Step 1: Fetch categories first (fast)
-        const mainCategories = await getCategories(null);
+        // Step 1: Check cache first for categories
+        let mainCategories = cache.getCategories();
+        
+        if (!mainCategories) {
+          // Fetch categories if not in cache
+          mainCategories = await getCategories(null);
+          cache.setCategories(mainCategories);
+        }
+        
         setCategories(mainCategories);
         setLoadingCategories(false); // Show categories immediately
 
-        // Step 2: Fetch products in parallel for all categories (optimized)
-        // Use Promise.allSettled to handle errors gracefully
-        const productPromises = mainCategories.map(async (category) => {
+        // Step 2: Load products progressively - check cache first
+        const categoriesWithProducts = mainCategories.slice(0, 3); // Only first 3 categories
+        
+        // Load first category products immediately (critical)
+        if (categoriesWithProducts.length > 0) {
+          const firstCategory = categoriesWithProducts[0];
+          const cachedProducts = cache.getCategoryProducts(firstCategory.slug);
+          
+          if (cachedProducts) {
+            productsMap[firstCategory.slug] = cachedProducts;
+            setCategoryProducts({ ...productsMap });
+          } else {
+            // Fetch first category products
             try {
               const response = await getProducts({
-              category: category.slug,
+                category: firstCategory.slug,
                 limit: 8,
               });
-            if (response.success && response.products && response.products.length > 0) {
-              // Filter products STRICTLY to ensure they belong to this exact category
-              const filteredProducts = response.products.filter(
-                (product) => 
-                  product.category && 
-                  (product.category._id === category._id || product.category.slug === category.slug)
-              );
-              if (filteredProducts.length > 0) {
-                return { slug: category.slug, products: filteredProducts };
+              if (response.success && response.products && response.products.length > 0) {
+                const filteredProducts = response.products.filter(
+                  (product) => 
+                    product.category && 
+                    (product.category._id === firstCategory._id || product.category.slug === firstCategory.slug)
+                );
+                if (filteredProducts.length > 0) {
+                  productsMap[firstCategory.slug] = filteredProducts;
+                  cache.setCategoryProducts(firstCategory.slug, filteredProducts);
+                  setCategoryProducts({ ...productsMap });
+                }
               }
-            }
-            return null;
             } catch (error) {
-            console.error(`Error fetching products for ${category.name}:`, error);
-            return null;
+              console.error(`Error fetching products for ${firstCategory.name}:`, error);
+            }
           }
-        });
+        }
 
-        // Wait for all product requests to complete
-        const results = await Promise.allSettled(productPromises);
-        
-        // Update products map as they load
-        results.forEach((result) => {
-          if (result.status === "fulfilled" && result.value) {
-            productsMap[result.value.slug] = result.value.products;
-            // Update state incrementally for better UX
-            setCategoryProducts((prev) => ({
-              ...prev,
-              [result.value!.slug]: result.value!.products,
-            }));
-          }
-        });
+        // Step 3: Load remaining categories in background (non-blocking)
+        if (categoriesWithProducts.length > 1) {
+          // Use setTimeout to defer non-critical loading
+          setTimeout(() => {
+            const remainingCategories = categoriesWithProducts.slice(1);
+            
+            remainingCategories.forEach(async (category) => {
+              // Check cache first
+              const cachedProducts = cache.getCategoryProducts(category.slug);
+              
+              if (cachedProducts) {
+                setCategoryProducts((prev) => ({
+                  ...prev,
+                  [category.slug]: cachedProducts,
+                }));
+              } else {
+                // Fetch in background
+                try {
+                  const response = await getProducts({
+                    category: category.slug,
+                    limit: 8,
+                  });
+                  if (response.success && response.products && response.products.length > 0) {
+                    const filteredProducts = response.products.filter(
+                      (product) => 
+                        product.category && 
+                        (product.category._id === category._id || product.category.slug === category.slug)
+                    );
+                    if (filteredProducts.length > 0) {
+                      cache.setCategoryProducts(category.slug, filteredProducts);
+                      setCategoryProducts((prev) => ({
+                        ...prev,
+                        [category.slug]: filteredProducts,
+                      }));
+                    }
+                  }
+                } catch (error) {
+                  console.error(`Error fetching products for ${category.name}:`, error);
+                }
+              }
+            });
+          }, 100); // Small delay to prioritize critical content
+        }
       } catch (error) {
         console.error("Error fetching category products:", error);
         setLoadingCategories(false);
@@ -80,7 +137,7 @@ export default function HomePage() {
     };
 
     fetchCategoryProducts();
-  }, []);
+  }, [cache]);
 
   return (
     <main className="flex-1 flex flex-col bg-background min-h-screen">
@@ -116,14 +173,20 @@ export default function HomePage() {
                 );
               })}
 
-      {/* About Us Section */}
-      <AboutSection />
+      {/* About Us Section - Load in background */}
+      <Suspense fallback={<div className="min-h-[400px]" />}>
+        <LazyAboutSection />
+      </Suspense>
 
-      {/* Products Tabs Section (New/Promotions/Best Sellers) */}
-      <ProductsTabs limit={8} />
+      {/* Products Tabs Section (New/Promotions/Best Sellers) - Load in background */}
+      <Suspense fallback={<div className="min-h-[400px] bg-coal" />}>
+        <LazyProductsTabs limit={8} />
+      </Suspense>
 
-      {/* News Section */}
-      <NewsSection />
+      {/* News Section - Load in background */}
+      <Suspense fallback={<div className="min-h-[400px]" />}>
+        <LazyNewsSection />
+      </Suspense>
           </>
         )}
       </div>
