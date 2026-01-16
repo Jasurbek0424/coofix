@@ -19,6 +19,7 @@ import { useCart } from "@/store/useCart";
 import { useFavorites } from "@/store/useFavorites";
 import { useCompare } from "@/store/useCompare";
 import { useUser } from "@/store/useUser";
+import { useCache } from "@/store/useCache";
 import { ReviewForm, ReviewList } from "@/components/ui/Reviews";
 import type { Product } from "@/types/product";
 import type { Review } from "@/api/reviews";
@@ -36,12 +37,15 @@ export default function ProductDetailPage() {
   const [activeTab, setActiveTab] = useState<"description" | "characteristics" | "delivery" | "reviews">("description");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   
   const { user } = useUser();
 
   const { addItem, isInCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
   const { toggleCompare, isCompared } = useCompare();
+  const cache = useCache();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -49,34 +53,59 @@ export default function ProductDetailPage() {
         setIsLoading(true);
         setError(null);
 
-        // Optimized: Fetch product and similar products in parallel
-        const productPromise = getProductBySlug(slug);
+        // Check cache first
+        let productData = cache.getProduct(slug);
         
-        // Start fetching product first
-        const productData = await productPromise;
+        if (!productData) {
+          // Fetch product if not in cache
+          productData = await getProductBySlug(slug);
+          if (productData) {
+            cache.setProduct(slug, productData);
+          }
+        }
+        
         setProduct(productData);
         setIsLoading(false); // Show product immediately
 
         if (productData) {
           // Fetch similar products in background (lazy load) - only if category exists
           if (productData.category?.slug) {
-            getProducts({
-              category: productData.category.slug,
-              limit: 10,
-            })
-              .then((similarResponse) => {
-                if (similarResponse.success) {
-                  // Filter products to ensure they belong to the same category and exclude current product
-                  const filtered = similarResponse.products.filter(
-                    (p) => p._id !== productData._id && p.category?.slug === productData.category?.slug
-                  );
-                  setSimilarProducts(filtered.slice(0, 3));
-                }
+            // Check cache first for similar products
+            const cachedSimilar = cache.getCategoryProducts(productData.category.slug);
+            
+            if (cachedSimilar) {
+              // Filter from cache
+              const filtered = cachedSimilar.filter(
+                (p) => p._id !== productData._id && p.category?.slug === productData.category?.slug
+              );
+              setSimilarProducts(filtered.slice(0, 3));
+            } else {
+              // Fetch similar products in background
+              getProducts({
+                category: productData.category.slug,
+                limit: 10,
               })
-              .catch((err) => {
-                console.error("Error fetching similar products:", err);
-                // Don't show error to user, just log it
-              });
+                .then((similarResponse) => {
+                  if (similarResponse.success) {
+                    // Filter products to ensure they belong to the same category and exclude current product
+                    const filtered = similarResponse.products.filter(
+                      (p) => p._id !== productData._id && p.category?.slug === productData.category?.slug
+                    );
+                    setSimilarProducts(filtered.slice(0, 3));
+                    
+                    // Cache the products for future use
+                    if (similarResponse.products.length > 0) {
+                      if (productData.category) {
+                        cache.setCategoryProducts(productData.category.slug, similarResponse.products);
+                      }
+                    }
+                  }
+                })
+                .catch((err) => {
+                  console.error("Error fetching similar products:", err);
+                  // Don't show error to user, just log it
+                });
+            }
           }
         }
       } catch (err) {
@@ -207,17 +236,58 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12 mb-8 md:mb-12">
           {/* Product Images */}
           <div className="space-y-3 md:space-y-4">
-            {/* Main Image */}
-            <div className="relative aspect-square bg-white dark:bg-dark rounded-lg overflow-hidden border border-gray-200 dark:border-coal w-full">
+            <div 
+              className="relative aspect-square bg-white dark:bg-dark rounded-lg overflow-hidden border border-gray-200 dark:border-coal w-2/3 cursor-zoom-in group"
+              onMouseMove={(e) => {
+                if (isZoomed) {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = ((e.clientX - rect.left) / rect.width) * 100;
+                  const y = ((e.clientY - rect.top) / rect.height) * 100;
+                  setZoomPosition({ x, y });
+                }
+              }}
+              onMouseEnter={() => setIsZoomed(true)}
+              onMouseLeave={() => setIsZoomed(false)}
+              onClick={() => {
+                // Open full screen modal on click
+                if (currentImage) {
+                  const modal = document.createElement('div');
+                  modal.className = 'fixed inset-0 z-50 bg-statDark flex items-center justify-center p-4 cursor-zoom-out';
+                  modal.onclick = () => document.body.removeChild(modal);
+                  
+                  const img = document.createElement('img');
+                  img.src = currentImage;
+                  img.className = 'max-w-full max-h-full object-contain';
+                  img.alt = product.name;
+                  
+                  modal.appendChild(img);
+                  document.body.appendChild(modal);
+                }
+              }}
+            >
               {currentImage ? (
-                <Image
-                  src={currentImage}
-                  alt={product.name}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-contain p-4"
-                  priority
-                />
+                <>
+                  <Image
+                    src={currentImage}
+                    alt={product.name}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className={`object-cover transition-transform duration-300 ${
+                      isZoomed ? 'scale-150' : 'scale-100'
+                    }`}
+                    style={{
+                      transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                    }}
+                    priority
+                  />
+                  {isZoomed && (
+                    <div className="absolute inset-0 pointer-events-none">
+                      <div className="absolute top-2 right-2 bg-gray text-white px-2 py-1 rounded text-xs">
+                        Нажмите для полноэкранного просмотра
+                      </div>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <span className="text-gray-400">Изображение отсутствует</span>
@@ -232,7 +302,7 @@ export default function ProductDetailPage() {
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`relative w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${
+                    className={`relative w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 shrink-0 transition-all ${
                       currentImageIndex === index
                         ? "border-orange"
                         : "border-gray-200 dark:border-coal"

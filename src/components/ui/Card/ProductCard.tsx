@@ -105,6 +105,7 @@ const ProductCard = memo(function ProductCard({
       ? legacyImage 
       : (product?.images?.[0] || null);
     const newImage = newImageRaw ? getImageUrl(newImageRaw) : null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentImage(newImage || null);
     setImageError(false);
   }, [product?.images, legacyImage, isLegacyMode]);

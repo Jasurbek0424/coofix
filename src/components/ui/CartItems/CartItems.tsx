@@ -44,22 +44,39 @@ export default function CartItems() {
         price: item.product.price,
       }));
 
-      const response = await fetch("/api/orders/create", {
+      const orderPayload = {
+        ...data,
+        items: orderItems,
+        total: total,
+      };
+
+      // Send to Telegram (for notifications)
+      const telegramResponse = await fetch("/api/orders/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...data,
-          items: orderItems,
-          total: total,
-        }),
+        body: JSON.stringify(orderPayload),
       });
 
-      const result = await response.json();
+      const telegramResult = await telegramResponse.json();
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Ошибка при оформлении заказа");
+      // Send to backend API (for database)
+      const backendResponse = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const backendResult = await backendResponse.json();
+
+      // Check if at least one request succeeded
+      if (!telegramResponse.ok && !backendResponse.ok) {
+        throw new Error(
+          telegramResult.message || backendResult.message || "Ошибка при оформлении заказа"
+        );
       }
 
       // Clear cart and close form

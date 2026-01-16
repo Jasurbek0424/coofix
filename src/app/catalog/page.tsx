@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -13,6 +13,7 @@ import { getCategoriesTree } from "@/api/categories";
 import { getProducts } from "@/api/products";
 import ProductCard from "@/components/ui/Card/ProductCard";
 import CatalogFilters from "@/components/ui/Filters/CatalogFilters";
+import { useCache } from "@/store/useCache";
 import type { Category, Product } from "@/types/product";
 
 function CatalogContent() {
@@ -33,6 +34,8 @@ function CatalogContent() {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  
+  const cache = useCache();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,8 +43,15 @@ function CatalogContent() {
         setIsLoading(true);
         setError(null);
 
-        // Fetch categories tree from API
-        const categoriesTree = await getCategoriesTree();
+        // Check cache first for categories tree
+        let categoriesTree = cache.getCategoriesTree();
+        
+        if (!categoriesTree) {
+          // Fetch categories tree from API if not in cache
+          categoriesTree = await getCategoriesTree();
+          cache.setCategoriesTree(categoriesTree);
+        }
+        
         setCategories(categoriesTree);
 
         // Build subcategories map from tree structure
@@ -59,6 +69,27 @@ function CatalogContent() {
           const category = categoriesTree.find(c => c.slug === categoryParam);
           if (categoryParam && category) {
             setSelectedCategory(category);
+          }
+
+          // Create cache key for filtered products
+          const cacheKey = JSON.stringify({
+            category: categoryParam,
+            sub: subParam,
+            filter: filterParam,
+            search: searchParam,
+            minPrice: minPriceParam,
+            maxPrice: maxPriceParam,
+            page: currentPage,
+          });
+          
+          // Check cache first
+          const cachedData = cache.getFilteredProducts(cacheKey);
+          
+          if (cachedData) {
+            setProducts(cachedData.products);
+            setTotalPages(Math.ceil(cachedData.total / 12));
+            setIsLoading(false);
+            return;
           }
 
           const response = await getProducts({
@@ -97,6 +128,9 @@ function CatalogContent() {
               ? filteredProducts.length 
               : response.total;
             setTotalPages(Math.ceil(totalCount / 12));
+            
+            // Cache the results
+            cache.setFilteredProducts(cacheKey, filteredProducts, totalCount);
           } else {
             setProducts([]);
           }
@@ -110,7 +144,7 @@ function CatalogContent() {
     };
 
     fetchData();
-  }, [categoryParam, subParam, filterParam, searchParam, minPriceParam, maxPriceParam, currentPage]);
+  }, [categoryParam, subParam, filterParam, searchParam, minPriceParam, maxPriceParam, currentPage, cache]);
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
