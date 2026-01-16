@@ -16,21 +16,28 @@ export default function Footer() {
     const fetchCategories = async () => {
       try {
         setIsLoading(true);
-        const mainCategories = await getCategories(null);
-        
-        // Filter only specific categories for footer
-        const footerCategories = mainCategories.filter((category) => {
-          const categoryName = category.name.toLowerCase();
-          return (
-            categoryName.includes("аккумуляторные инструменты") ||
-            categoryName.includes("электроинструменты") ||
-            categoryName.includes("компрессоры") ||
-            categoryName.includes("насосное оборудование") ||
-            categoryName.includes("пылесосы строительные")
-          );
+        const mainCategories = await getCategories(null).catch((error) => {
+          console.error("Error fetching categories for footer:", error);
+          return [];
         });
         
-        setCategories(footerCategories);
+        if (mainCategories && mainCategories.length > 0) {
+          // Filter only specific categories for footer
+          const footerCategories = mainCategories.filter((category) => {
+            const categoryName = category.name.toLowerCase();
+            return (
+              categoryName.includes("аккумуляторные инструменты") ||
+              categoryName.includes("электроинструменты") ||
+              categoryName.includes("компрессоры") ||
+              categoryName.includes("насосное оборудование") ||
+              categoryName.includes("пылесосы строительные")
+            );
+          });
+          
+          setCategories(footerCategories);
+        } else {
+          setCategories([]);
+        }
       } catch (error) {
         console.error("Error fetching categories for footer:", error);
         setCategories([]);

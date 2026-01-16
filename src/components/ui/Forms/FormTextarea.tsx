@@ -14,14 +14,14 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label className="block text-xs sm:text-sm font-medium text-foreground mb-1">
             {label}
           </label>
         )}
         <textarea
           ref={ref}
           className={clsx(
-            "w-full px-0 py-2 border-2 rounded text-foreground bg-transparent focus:outline-none transition-colors resize-none",
+            "w-full px-0 py-1.5 sm:py-2 text-sm border-2 rounded text-foreground bg-transparent focus:outline-none transition-colors resize-none",
             error
               ? "border-red text-red placeholder-red/50"
               : "border-gray focus:border-orange text-coal",

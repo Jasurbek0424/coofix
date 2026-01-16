@@ -310,9 +310,12 @@ export function CatalogDropdown() {
     const fetchCategories = async () => {
       try {
         setIsLoading(true);
-        const apiCategoriesTree = await getCategoriesTree();
+        const apiCategoriesTree = await getCategoriesTree().catch((error) => {
+          console.error("Error fetching categories tree:", error);
+          return [];
+        });
         
-        if (apiCategoriesTree.length > 0) {
+        if (apiCategoriesTree && apiCategoriesTree.length > 0) {
           // Transform tree format to component format
           const transformedCategories = apiCategoriesTree.map((apiCategory) => {
             return {
@@ -328,6 +331,9 @@ export function CatalogDropdown() {
           });
           
           setCategories(transformedCategories);
+        } else {
+          // Fallback categories if API returns empty
+          setCategories(fallbackCategories);
         }
       } catch (error) {
         console.error("Error fetching categories tree:", error);

@@ -14,14 +14,14 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label className="block text-xs sm:text-sm font-medium text-foreground mb-1">
             {label}
           </label>
         )}
         <input
           ref={ref}
           className={clsx(
-            "w-full px-0 py-2 border-0 border-b-2 bg-transparent focus:outline-none transition-colors",
+            "w-full px-0 py-1.5 sm:py-2 text-sm border-0 border-b-2 bg-transparent focus:outline-none transition-colors",
             error
               ? "border-red text-red placeholder-red/50"
               : "border-gray focus:border-orange text-foreground",

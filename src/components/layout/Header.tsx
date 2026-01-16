@@ -304,7 +304,7 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="bg-statDark hidden lg:block">
+        <div className="bg-orange dark:bg-statDark hidden lg:block">
           <div className="container mx-auto px-4 sm:px-4 lg:px-6 xl:px-8">
             <div className="flex items-center justify-between py-3 gap-3">
               <CatalogDropdown />
@@ -333,6 +333,12 @@ export default function Header() {
                   className="text-white hover:text-orange transition-colors font-medium"
                 >
                   Новинки
+                </Link>
+                <Link
+                  href="/wholesale"
+                  className="text-white hover:text-orange transition-colors font-medium"
+                >
+                  Оптовикам
                 </Link>
               </nav>
 
@@ -373,6 +379,7 @@ export default function Header() {
                 { href: "/catalog?filter=promo", label: "Акции" },
                 { href: "/catalog?filter=hits", label: "Хиты сезона" },
                 { href: "/news", label: "Новинки" },
+                { href: "/wholesale", label: "Оптовикам" },
                 { href: "/profile", label: "Профиль" },
                 { href: "/favorites", label: "Избранное" },
               ].map((item) => (
