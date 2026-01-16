@@ -36,22 +36,24 @@ export default function HomePage() {
         // Step 2: Fetch products in parallel for all categories (optimized)
         // Use Promise.allSettled to handle errors gracefully
         const productPromises = mainCategories.map(async (category) => {
-          try {
-            const response = await getProducts({
+            try {
+              const response = await getProducts({
               category: category.slug,
-              limit: 8,
-            });
+                limit: 8,
+              });
             if (response.success && response.products && response.products.length > 0) {
-              // Filter products to ensure they belong to this category
+              // Filter products STRICTLY to ensure they belong to this exact category
               const filteredProducts = response.products.filter(
-                (product) => product.category?.slug === category.slug
+                (product) => 
+                  product.category && 
+                  (product.category._id === category._id || product.category.slug === category.slug)
               );
               if (filteredProducts.length > 0) {
                 return { slug: category.slug, products: filteredProducts };
               }
             }
             return null;
-          } catch (error) {
+            } catch (error) {
             console.error(`Error fetching products for ${category.name}:`, error);
             return null;
           }
@@ -85,8 +87,8 @@ export default function HomePage() {
       <Header />
       
       <div className="flex-1 flex-grow">
-        {/* Hero Banner Section */}
-        <HeroBanner />
+      {/* Hero Banner Section */}
+      <HeroBanner />
 
         {/* Product Category Sections - Only show categories that have products */}
         {loadingCategories ? (
@@ -95,34 +97,39 @@ export default function HomePage() {
           </div>
         ) : (
           <>
-            {categories.map((category) => {
-              const products = categoryProducts[category.slug] || [];
-              if (products.length === 0) return null;
-              
-              return (
-                <ProductCategorySection
-                  key={category._id}
-                  title={category.name}
-                  products={products}
-                  categoryLink={`/catalog?category=${category.slug}`}
-                />
-              );
-            })}
+            {categories
+              .filter((category) => {
+                const products = categoryProducts[category.slug] || [];
+                return products.length > 0;
+              })
+              .slice(0, 3)
+              .map((category) => {
+                const products = categoryProducts[category.slug] || [];
+                
+                return (
+                  <ProductCategorySection
+                    key={category._id}
+                    title={category.name}
+                    products={products}
+                    categoryLink={`/catalog?category=${category.slug}`}
+                  />
+                );
+              })}
 
-            {/* About Us Section */}
-            <AboutSection />
+      {/* About Us Section */}
+      <AboutSection />
 
-            {/* Products Tabs Section (New/Promotions/Best Sellers) */}
-            <ProductsTabs limit={8} />
+      {/* Products Tabs Section (New/Promotions/Best Sellers) */}
+      <ProductsTabs limit={8} />
 
-            {/* News Section */}
-            <NewsSection />
+      {/* News Section */}
+      <NewsSection />
           </>
         )}
       </div>
 
       <div className="mt-auto">
-        <Footer />
+      <Footer />
       </div>
     </main>
   );

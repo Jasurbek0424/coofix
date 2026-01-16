@@ -204,16 +204,17 @@ export default function ProductDetailPage() {
         <Breadcrumbs items={breadcrumbs} />
 
         {/* Product Main Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12 mb-8 md:mb-12">
           {/* Product Images */}
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {/* Main Image */}
-            <div className="relative aspect-square bg-white dark:bg-dark rounded-lg overflow-hidden border border-gray-200 dark:border-coal">
+            <div className="relative aspect-square bg-white dark:bg-dark rounded-lg overflow-hidden border border-gray-200 dark:border-coal w-full">
               {currentImage ? (
                 <Image
                   src={currentImage}
                   alt={product.name}
                   fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-contain p-4"
                   priority
                 />
@@ -226,12 +227,12 @@ export default function ProductDetailPage() {
 
             {/* Thumbnail Images */}
             {images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 {images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${
+                    className={`relative w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${
                       currentImageIndex === index
                         ? "border-orange"
                         : "border-gray-200 dark:border-coal"
@@ -242,6 +243,7 @@ export default function ProductDetailPage() {
                         src={image}
                         alt={`${product.name} ${index + 1}`}
                         fill
+                        sizes="80px"
                         className="object-cover"
                       />
                     ) : (
@@ -256,34 +258,34 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <div>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
                 {product.isNew && (
-                  <span className="px-3 py-1 bg-blue-500 text-white text-sm font-medium rounded">
+                  <span className="px-2 py-1 md:px-3 md:py-1 bg-blue-500 text-white text-xs md:text-sm font-medium rounded">
                     Новинка
                   </span>
                 )}
                 {product.isSale && (
-                  <span className="px-3 py-1 bg-red-500 text-white text-sm font-medium rounded">
+                  <span className="px-2 py-1 md:px-3 md:py-1 bg-red-500 text-white text-xs md:text-sm font-medium rounded">
                     Акция
                   </span>
                 )}
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-coal dark:text-foreground mb-4">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-coal dark:text-foreground mb-3 md:mb-4">
                 {product.name}
               </h1>
               {product.brand && (
-                <p className="text-lg text-gray-smoky mb-4">Бренд: {product.brand.name}</p>
+                <p className="text-base md:text-lg text-gray-smoky mb-3 md:mb-4">Бренд: {product.brand.name}</p>
               )}
             </div>
 
             <div>
-              <p className="text-2xl md:text-3xl font-bold text-orange mb-2">
+              <p className="text-xl md:text-2xl lg:text-3xl font-bold text-orange mb-2">
                 {product.price.toLocaleString("ru-RU")} ₽
               </p>
               {product.oldPrice && (
-                <p className="text-lg text-gray-smoky line-through">
+                <p className="text-base md:text-lg text-gray-smoky line-through">
                   {product.oldPrice.toLocaleString("ru-RU")} ₽
                 </p>
               )}
@@ -291,50 +293,56 @@ export default function ProductDetailPage() {
 
             <div>
               {product.inStock ? (
-                <p className="text-green-600 dark:text-green-400 flex items-center gap-2 text-lg">
+                <p className="text-green-600 dark:text-green-400 flex items-center gap-2 text-base md:text-lg">
                   <span>✓</span> В наличии
                 </p>
               ) : (
-                <p className="text-red-500 dark:text-red-400 text-lg">Нет в наличии</p>
+                <p className="text-red-500 dark:text-red-400 text-base md:text-lg">Нет в наличии</p>
               )}
             </div>
 
-            <div className="flex items-center gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4 pt-4">
               <Button
                 variant="primary"
                 onClick={() => {
-                  if (!productInCart) {
+                  if (!productInCart && product.inStock) {
                     addItem(product, 1);
                   }
                 }}
                 disabled={productInCart || !product.inStock}
-                className="flex-1"
+                className="w-full sm:flex-1"
               >
-                {productInCart ? "В КОРЗИНЕ" : "В КОРЗИНУ"}
+                {!product.inStock 
+                  ? "НЕТ В НАЛИЧИИ" 
+                  : productInCart 
+                    ? "В КОРЗИНЕ" 
+                    : "В КОРЗИНУ"}
               </Button>
 
-              <IconButton
-                variant="chart"
-                icon={FiBarChart2}
-                activeIcon={FiBarChart2}
-                active={productCompared}
-                onClick={() => toggleCompare(product)}
-              />
+              <div className="flex gap-2 sm:gap-3">
+                <IconButton
+                  variant="chart"
+                  icon={FiBarChart2}
+                  activeIcon={FiBarChart2}
+                  active={productCompared}
+                  onClick={() => toggleCompare(product)}
+                />
 
-              <IconButton
-                variant="like"
-                icon={FiHeart}
-                activeIcon={FaHeart}
-                active={productLiked}
-                onClick={() => toggleFavorite(product)}
-              />
+                <IconButton
+                  variant="like"
+                  icon={FiHeart}
+                  activeIcon={FaHeart}
+                  active={productLiked}
+                  onClick={() => toggleFavorite(product)}
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Product Details Tabs */}
-        <div className="mb-12">
-          <div className="flex gap-4 border-b border-gray-200 dark:border-coal mb-6">
+        <div className="mb-8 md:mb-12">
+          <div className="flex gap-1 sm:gap-2 md:gap-4 border-b border-gray-200 dark:border-coal mb-4 md:mb-6 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
             {[
               { id: "description", label: "Описание" },
               { id: "characteristics", label: "Характеристики" },
@@ -344,7 +352,7 @@ export default function ProductDetailPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`px-6 py-3 font-medium transition-colors relative ${
+                className={`px-2 py-2 sm:px-3 sm:py-2 md:px-6 md:py-3 text-xs sm:text-sm md:text-base font-medium transition-colors relative whitespace-nowrap flex-shrink-0 min-w-fit ${
                   activeTab === tab.id
                     ? "text-orange"
                     : "text-gray-smoky hover:text-foreground"
@@ -358,7 +366,7 @@ export default function ProductDetailPage() {
             ))}
           </div>
 
-          <div className="bg-white dark:bg-dark rounded-lg p-6 border border-gray-200 dark:border-coal">
+          <div className="bg-white dark:bg-dark rounded-lg p-4 md:p-6 border border-gray-200 dark:border-coal">
             {activeTab === "description" && (
               <div className="prose dark:prose-invert max-w-none">
                 <p className="text-gray-600 dark:text-gray-400 whitespace-pre-line">
@@ -422,13 +430,13 @@ export default function ProductDetailPage() {
 
         {/* Similar Products - 3 ta o'xshash product */}
         {similarProducts.length > 0 && (
-          <section className="mt-12 mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl md:text-3xl font-bold text-coal dark:text-foreground">
+          <section className="mt-8 md:mt-12 mb-6 md:mb-8">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-coal dark:text-foreground">
                 Похожие товары
               </h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {similarProducts.map((item) => (
                 <ProductCard key={item._id} product={item} />
               ))}

@@ -8,6 +8,7 @@ interface Props {
   icon: React.ComponentType<any>;
   activeIcon?: React.ComponentType<any>;
   active?: boolean;
+  disabled?: boolean;
   variant: "cart" | "like" | "chart";
   onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
 }
@@ -16,6 +17,7 @@ export function IconButton({
   icon: Icon,
   activeIcon: ActiveIcon,
   active = false,
+  disabled = false,
   variant,
   onClick,
 }: Props) {
@@ -27,9 +29,13 @@ export function IconButton({
 
   return (
     <button
-      onClick={(e) => onClick?.(e)}
+      onClick={(e) => !disabled && onClick?.(e)}
+      disabled={disabled}
       className={clsx(
-        "p-3 transition-all duration-200 flex items-center justify-center cursor-pointer text-orange",
+        "p-3 transition-all duration-200 flex items-center justify-center",
+        disabled 
+          ? "cursor-not-allowed opacity-50" 
+          : "cursor-pointer text-orange",
 
         variant === "cart" &&
           (active

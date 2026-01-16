@@ -12,6 +12,7 @@ import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { getCategoriesTree } from "@/api/categories";
 import { getProducts } from "@/api/products";
 import ProductCard from "@/components/ui/Card/ProductCard";
+import CatalogFilters from "@/components/ui/Filters/CatalogFilters";
 import type { Category, Product } from "@/types/product";
 
 function CatalogContent() {
@@ -20,6 +21,8 @@ function CatalogContent() {
   const subParam = searchParams.get("sub");
   const filterParam = searchParams.get("filter");
   const searchParam = searchParams.get("search");
+  const minPriceParam = searchParams.get("minPrice");
+  const maxPriceParam = searchParams.get("maxPrice");
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategoriesMap, setSubcategoriesMap] = useState<Record<string, Category[]>>({});
@@ -53,7 +56,7 @@ function CatalogContent() {
 
         // If category or filter params exist, fetch products
         if (categoryParam || filterParam || searchParam) {
-          const category = categories.find(c => c.slug === categoryParam);
+          const category = categoriesTree.find(c => c.slug === categoryParam);
           if (categoryParam && category) {
             setSelectedCategory(category);
           }
@@ -63,13 +66,37 @@ function CatalogContent() {
             sub: subParam || undefined,
             filter: filterParam || undefined,
             search: searchParam || undefined,
+            minPrice: minPriceParam || undefined,
+            maxPrice: maxPriceParam || undefined,
             page: currentPage,
             limit: 12,
           });
 
           if (response.success && response.products) {
-            setProducts(response.products);
-            setTotalPages(Math.ceil(response.total / 12));
+            // Strictly filter products by category if categoryParam exists
+            let filteredProducts = response.products;
+            if (categoryParam && selectedCategory) {
+              filteredProducts = response.products.filter(
+                (product) =>
+                  product.category &&
+                  (product.category._id === selectedCategory._id || 
+                   product.category.slug === selectedCategory.slug)
+              );
+            }
+            // Also filter by subcategory if subParam exists
+            if (subParam && filteredProducts.length > 0) {
+              filteredProducts = filteredProducts.filter(
+                (product) =>
+                  product.category &&
+                  product.category.parent === selectedCategory?._id
+              );
+            }
+            setProducts(filteredProducts);
+            // Use filtered count for pagination, but fallback to API total if no filtering
+            const totalCount = filteredProducts.length !== response.products.length 
+              ? filteredProducts.length 
+              : response.total;
+            setTotalPages(Math.ceil(totalCount / 12));
           } else {
             setProducts([]);
           }
@@ -83,7 +110,7 @@ function CatalogContent() {
     };
 
     fetchData();
-  }, [categoryParam, subParam, filterParam, searchParam, currentPage]);
+  }, [categoryParam, subParam, filterParam, searchParam, minPriceParam, maxPriceParam, currentPage]);
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
@@ -144,16 +171,28 @@ function CatalogContent() {
       
       <main className="flex-1 container mx-auto px-4 py-8 lg:py-12">
         <Breadcrumbs items={breadcrumbs} />
-        <h1 className="text-3xl md:text-4xl font-bold text-coal dark:text-foreground mb-8">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-coal dark:text-foreground mb-6 md:mb-8">
           {getPageTitle()}
         </h1>
 
         {showProducts ? (
-          // Products view
-          <>
-            {products.length > 0 ? (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
+          // Products view with filters
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+            {/* Filter Sidebar - Show on mobile first, then desktop left */}
+            {categoryParam && selectedCategory && (
+              <div className="w-full lg:w-64 lg:shrink-0 order-1 lg:order-1">
+                <CatalogFilters
+                  category={selectedCategory}
+                  subcategories={subcategoriesMap[selectedCategory._id] || []}
+                />
+              </div>
+            )}
+
+            {/* Products Grid */}
+            <div className="flex-1 order-2 lg:order-2">
+              {products.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
                   {products.map((product) => (
                     <ProductCard key={product._id} product={product} />
                   ))}
@@ -161,31 +200,33 @@ function CatalogContent() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-2 mt-8">
+                  <div className="flex justify-center items-center gap-1 md:gap-2 mt-6 md:mt-8 flex-wrap">
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="px-4 py-2 bg-white dark:bg-dark border border-gray-200 dark:border-coal rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-coal transition-colors"
+                      className="px-3 py-2 md:px-4 md:py-2 text-sm md:text-base bg-white dark:bg-dark border border-gray-200 dark:border-coal rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-coal transition-colors"
                     >
                       Назад
                     </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`px-4 py-2 rounded-lg transition-colors ${
-                          currentPage === page
-                            ? "bg-orange text-white"
-                            : "bg-white dark:bg-dark border border-gray-200 dark:border-coal hover:bg-gray-50 dark:hover:bg-coal"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
+                    <div className="flex gap-1 md:gap-2 flex-wrap justify-center">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-3 py-2 md:px-4 md:py-2 text-sm md:text-base rounded-lg transition-colors ${
+                            currentPage === page
+                              ? "bg-orange text-white"
+                              : "bg-white dark:bg-dark border border-gray-200 dark:border-coal hover:bg-gray-50 dark:hover:bg-coal"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
                     <button
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
-                      className="px-4 py-2 bg-white dark:bg-dark border border-gray-200 dark:border-coal rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-coal transition-colors"
+                      className="px-3 py-2 md:px-4 md:py-2 text-sm md:text-base bg-white dark:bg-dark border border-gray-200 dark:border-coal rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-coal transition-colors"
                     >
                       Вперед
                     </button>
@@ -207,8 +248,9 @@ function CatalogContent() {
                     : "В данной категории товары отсутствуют."
                 }
               />
-            )}
-          </>
+              )}
+            </div>
+          </div>
         ) : (
           // Categories view
           categories.length === 0 ? (
@@ -230,16 +272,49 @@ function CatalogContent() {
                       href={`/catalog?category=${category.slug}`}
                       className="block"
                     >
-                      {category.image && (
-                        <div className="relative h-48 w-full bg-gray-100 dark:bg-coal">
-                          <Image
-                            src={typeof category.image === "string" ? category.image : category.image.url}
-                            alt={category.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      )}
+                      {(() => {
+                        // Handle different image formats: string | null | { url: string; publicId: string }
+                        let imageUrl: string | null = null;
+                        
+                        if (category.image) {
+                          if (typeof category.image === "string") {
+                            imageUrl = category.image.trim() || null;
+                          } else if (typeof category.image === "object" && "url" in category.image) {
+                            imageUrl = category.image.url?.trim() || null;
+                          }
+                        }
+
+                        return imageUrl ? (
+                          <div className="relative h-48 w-full bg-gray-100 dark:bg-coal">
+                            <Image
+                              src={imageUrl}
+                              alt={category.name}
+                              fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              className="object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="relative h-48 w-full bg-gray-100 dark:bg-coal flex items-center justify-center">
+                            <div className="text-center text-gray-400 dark:text-gray-600">
+                              <svg
+                                className="w-16 h-16 mx-auto mb-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                              <span className="text-xs">Изображение отсутствует</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
                       <div className="p-6">
                         <h2 className="text-xl font-semibold text-coal dark:text-foreground mb-2 hover:text-orange transition-colors">
                           {category.name}

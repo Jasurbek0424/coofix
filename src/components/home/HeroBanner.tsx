@@ -91,6 +91,7 @@ export default function HeroBanner({
               src={currentMainBanner.image}
               alt={currentMainBanner.title}
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 75vw"
               priority // Важно для LCP (Largest Contentful Paint)
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
@@ -175,6 +176,7 @@ export default function HeroBanner({
                 src={banner.image}
                 alt={banner.title}
                 fill
+                sizes="(max-width: 768px) 100vw, 25vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
 
