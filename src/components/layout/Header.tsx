@@ -304,7 +304,7 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="bg-orange dark:bg-statDark hidden lg:block">
+        <div className="bg-statDark hidden lg:block">
           <div className="container mx-auto px-4 sm:px-4 lg:px-6 xl:px-8">
             <div className="flex items-center justify-between py-3 gap-3">
               <CatalogDropdown />
