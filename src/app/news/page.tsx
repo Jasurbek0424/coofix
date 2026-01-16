@@ -75,7 +75,7 @@ export default function NewsPage() {
           <Loader size="lg" />
         </div>
         <div className="mt-auto">
-          <Footer />
+        <Footer />
         </div>
       </div>
     );
@@ -89,7 +89,7 @@ export default function NewsPage() {
           <p className="text-red-500 text-lg">{error}</p>
         </div>
         <div className="mt-auto">
-          <Footer />
+        <Footer />
         </div>
       </div>
     );
@@ -139,6 +139,7 @@ export default function NewsPage() {
                       src={item.image}
                       alt={item.title}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
@@ -163,7 +164,7 @@ export default function NewsPage() {
       </main>
 
       <div className="mt-auto">
-        <Footer />
+      <Footer />
       </div>
     </div>
   );

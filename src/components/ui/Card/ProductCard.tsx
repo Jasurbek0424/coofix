@@ -129,14 +129,14 @@ const ProductCard = memo(function ProductCard({
     >
       {/* Icons */}
       <div className="flex justify-between items-center gap-3 mb-3">
-        <div className="min-w-[70px] text-center">
-          {determinedVariant === "default" && <div />}
-          {determinedVariant === "new" && (
-            <p className="text-sm font-medium text-foreground bg-background px-2 py-1 rounded">Новинка</p>
+        <div className="min-w-[70px] flex flex-col gap-1">
+          {product?.isNew && (
+            <p className="text-xs font-medium text-white bg-blue-500 px-2 py-1 rounded w-fit">Новинка</p>
           )}
-          {determinedVariant === "action" && (
-            <p className="text-sm font-medium text-foreground bg-background px-2 py-1 rounded">Акция</p>
+          {product?.isSale && (
+            <p className="text-xs font-medium text-white bg-orange px-2 py-1 rounded w-fit">Акция</p>
           )}
+          {!product?.isNew && !product?.isSale && <div />}
         </div>
         <div className="flex items-center gap-3">
           {/* Qiyoslash tugmasi */}
@@ -199,7 +199,8 @@ const ProductCard = memo(function ProductCard({
             width={220}
             height={180}
             loading="lazy"
-            className="object-contain"
+            className="object-contain w-auto h-auto"
+            style={{ width: "auto", height: "auto" }}
             onError={() => {
               setImageError(true);
             }}
@@ -240,11 +241,12 @@ const ProductCard = memo(function ProductCard({
           variant="cart"
           icon={FiShoppingCart}
           activeIcon={IoMdCheckboxOutline}
-          active={inCart} 
+          active={inCart}
+          disabled={!inStock}
           onClick={(e) => {
             e?.preventDefault();
             e?.stopPropagation();
-            if (product && productId) {
+            if (product && productId && inStock) {
               if (inCart) {
                 removeItem(productId);
               } else {

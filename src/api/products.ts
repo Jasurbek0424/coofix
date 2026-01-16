@@ -7,6 +7,8 @@ export async function getProducts(
     category?: string;
     sub?: string;
     filter?: string;
+    minPrice?: string | number;
+    maxPrice?: string | number;
     page?: number;
     limit?: number;
   },
@@ -18,6 +20,8 @@ export async function getProducts(
   if (params?.category) searchParams.append("category", params.category);
   if (params?.sub) searchParams.append("sub", params.sub);
   if (params?.filter) searchParams.append("filter", params.filter);
+  if (params?.minPrice) searchParams.append("minPrice", params.minPrice.toString());
+  if (params?.maxPrice) searchParams.append("maxPrice", params.maxPrice.toString());
   if (params?.page) searchParams.append("page", params.page.toString());
   if (params?.limit) searchParams.append("limit", params.limit.toString());
 

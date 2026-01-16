@@ -16,6 +16,7 @@ export default function AboutSection() {
               src={AboutImg}
               alt="О нас - COOFIX TOOLS"
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
               priority
             />
