@@ -6,3 +6,4 @@ export { RegistrationForm } from "./RegistrationForm";
 export { OrderForm } from "./OrderForm";
 export { LoginForm } from "./LoginForm";
 export { SMSVerificationForm } from "./SMSVerificationForm";
+export { WholesaleForm } from "./WholesaleForm";

@@ -172,7 +172,7 @@ const ProductCard = memo(function ProductCard({
       </div>
 
       {/* Image */}
-      <div className="flex justify-center mb-4 h-[210px] bg-gray-50 dark:bg-coal/50 rounded">
+      <div className="relative w-full mb-4 h-[210px] bg-gray-50 dark:bg-coal/50 rounded overflow-hidden group">
         {imageError || !currentImage ? (
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center">
@@ -196,11 +196,10 @@ const ProductCard = memo(function ProductCard({
           <Image
             src={currentImage}
             alt={title}
-            width={220}
-            height={180}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 300px"
             loading="lazy"
-            className="object-contain w-auto h-auto"
-            style={{ width: "auto", height: "auto" }}
+            className="object-cover transition-transform duration-300 group-hover:scale-110"
             onError={() => {
               setImageError(true);
             }}
