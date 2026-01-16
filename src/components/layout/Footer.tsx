@@ -1,11 +1,47 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Logo from "../../assets/logo.png";
 import { SocialIcons } from "@/components/ui/Icons/SocialIcons";
+import { getCategories } from "@/api/categories";
+import type { Category } from "@/types/product";
 
 export default function Footer() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setIsLoading(true);
+        const mainCategories = await getCategories(null);
+        
+        // Filter only specific categories for footer
+        const footerCategories = mainCategories.filter((category) => {
+          const categoryName = category.name.toLowerCase();
+          return (
+            categoryName.includes("аккумуляторные инструменты") ||
+            categoryName.includes("электроинструменты") ||
+            categoryName.includes("компрессоры") ||
+            categoryName.includes("насосное оборудование") ||
+            categoryName.includes("пылесосы строительные")
+          );
+        });
+        
+        setCategories(footerCategories);
+      } catch (error) {
+        console.error("Error fetching categories for footer:", error);
+        setCategories([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   return (
     <footer className="bg-coal text-white">
       <div className="container mx-auto px-4 py-12">
@@ -15,56 +51,28 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4 text-gray-smoky">
               Каталог
             </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/catalog?category=malyarnye-tovary"
-                  className="text-gray-smoky hover:text-orange transition-colors"
-                >
-                  Малярные товары
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/catalog?category=elektrooborudovanie"
-                  className="text-gray-smoky hover:text-orange transition-colors"
-                >
-                  Электрооборудование
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/catalog?category=specodezhda"
-                  className="text-gray-smoky hover:text-orange transition-colors"
-                >
-                  Спецодежда
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/catalog?category=dlya-doma-i-dachi"
-                  className="text-gray-smoky hover:text-orange transition-colors"
-                >
-                  Для дома и дачи
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/catalog?category=sezonnoe"
-                  className="text-gray-smoky hover:text-orange transition-colors"
-                >
-                  Сезонное
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/catalog?category=instrument"
-                  className="text-gray-smoky hover:text-orange transition-colors"
-                >
-                  Инструмент
-                </Link>
-              </li>
-            </ul>
+            {isLoading ? (
+              <ul className="space-y-2">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <li key={i} className="h-5 bg-gray-600/30 rounded animate-pulse" />
+                ))}
+              </ul>
+            ) : categories.length > 0 ? (
+              <ul className="space-y-2">
+                {categories.map((category) => (
+                  <li key={category._id}>
+                    <Link
+                      href={`/catalog?category=${category.slug}`}
+                      className="text-gray-smoky hover:text-orange transition-colors"
+                    >
+                      {category.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-smoky text-sm">Категории не найдены</p>
+            )}
           </div>
 
           {/* Column 2: Company Information */}

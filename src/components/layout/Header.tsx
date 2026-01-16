@@ -217,16 +217,15 @@ export default function Header() {
                 >
                   +7 495 120-32-14
                 </a>
-                <Link
-                  href="/callback"
-                  className="text-sm text-orange underline hover:text-orange/80 transition-colors"
+                <button
                   onClick={(e) => {
                     e.preventDefault();
                     open();
                   }}
+                  className="text-sm text-orange underline hover:text-orange/80 transition-colors"
                 >
                   Заказать звонок
-                </Link>
+                </button>
               </div>
 
               <div className="text-white hidden xl:block shrink-0">
@@ -398,17 +397,16 @@ export default function Header() {
               >
                 +7 495 120-32-14
               </a>
-              <Link
-                href="/callback"
-                className="text-lg text-orange underline hover:text-orange/80 transition-colors block"
+              <button
                 onClick={(e) => {
                   e.preventDefault();
                   setIsMenuOpen(false);
                   open();
                 }}
+                className="text-lg text-orange underline hover:text-orange/80 transition-colors block text-left"
               >
                 Заказать звонок
-              </Link>
+              </button>
             </div>
 
             <div className="mt-8">

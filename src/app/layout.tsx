@@ -3,6 +3,7 @@ import "../styles/globals.css";
 import { Noto_Sans } from "next/font/google";
 
 import { ThemeProvider } from "next-themes";
+import { MarketplaceButtons } from "@/components/shared/MarketplaceButtons";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://coofix.ru"),
@@ -72,6 +73,7 @@ export default function RootLayout({
       <body className={`${noto.variable} antialiased h-full flex flex-col`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
+          <MarketplaceButtons />
         </ThemeProvider>
       </body>
     </html>
