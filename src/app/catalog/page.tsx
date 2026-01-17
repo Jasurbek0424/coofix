@@ -243,7 +243,7 @@ function CatalogContent() {
             
             // Apply client-side pagination for category-filtered products
             let paginatedProducts = filteredProducts;
-            let totalCount = filteredProducts.length;
+            const totalCount = filteredProducts.length;
             
             if (categoryParam || subParam) {
               // Client-side pagination for category-filtered products

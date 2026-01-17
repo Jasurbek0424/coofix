@@ -4,11 +4,23 @@
 import Link from "next/link";
 import Image from "next/image";
 import { FiTrash2 } from "react-icons/fi";
-import type { Product } from "@/types/product"; 
+import type { Product, ProductImage } from "@/types/product"; 
 
 // ✨ FIX: React.ReactNode tipidan foydalanish uchun React import qilindi
 import React, { ReactNode } from "react"; 
 import { useCompare } from "@/store/useCompare";
+
+// Helper function to extract image URL
+const getImageUrl = (img: string | ProductImage | undefined): string | null => {
+  if (!img) return null;
+  if (typeof img === "string") {
+    return img.trim() || null;
+  }
+  if (img && typeof img === "object" && "url" in img) {
+    return img.url?.trim() || null;
+  }
+  return null;
+};
 
 // FIX 2: formatPrice endi 'unknown' turini qabul qiladi va ichida 'number'ga tekshiradi
 const formatPrice = (value: unknown): string => {
@@ -78,13 +90,37 @@ export default function CompareItems() {
                         <FiTrash2 size={20} />
                     </button>
                     <Link href={`/product/${product.slug}`}>
-                      <Image
-                        src={typeof product.images?.[0] === 'string' ? product.images[0] : "/placeholder-product.png"}
-                        alt={product.name}
-                        width={100}
-                        height={100}
-                        className="object-contain mb-2"
-                      />
+                      {(() => {
+                        const imageUrl = getImageUrl(product.images?.[0]);
+                        return imageUrl ? (
+                          <Image
+                            src={imageUrl}
+                            alt={product.name}
+                            width={100}
+                            height={100}
+                            className="object-contain mb-2"
+                            unoptimized={imageUrl.startsWith("http") || imageUrl.startsWith("//")}
+                          />
+                        ) : (
+                          <div className="w-[100px] h-[100px] flex items-center justify-center bg-gray-50 dark:bg-coal/50 rounded mb-2 mx-auto">
+                            <div className="text-center text-gray-400 dark:text-gray-600">
+                              <svg
+                                className="w-8 h-8 mx-auto mb-1"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        );
+                      })()}
                       <p className="text-sm font-medium text-foreground hover:text-orange line-clamp-2">
                         {product.name}
                       </p>
