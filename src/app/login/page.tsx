@@ -12,8 +12,9 @@ import type { LoginFormData } from "@/lib/validations";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login: loginUser, isLoading, error, clearError, isAuthenticated, _hasHydrated } = useUser();
+  const { login: loginUser, loginWithGoogle: loginUserWithGoogle, isLoading, error, clearError, isAuthenticated, _hasHydrated } = useUser();
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // Hydration tugaguncha yoki localStorage'dan token'ni tekshirish
   useEffect(() => {
@@ -64,6 +65,23 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = async (idToken: string) => {
+    try {
+      setIsGoogleLoading(true);
+      setLoginError(null);
+      clearError();
+      await loginUserWithGoogle(idToken);
+      router.push("/profile/orders");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error("Google login error:", err);
+      const errorMessage = err?.response?.data?.message || err?.message || "Ошибка при входе через Google";
+      setLoginError(errorMessage);
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
@@ -79,7 +97,11 @@ export default function LoginPage() {
             </div>
           )}
 
-          <LoginForm onSubmit={handleLogin} isLoading={isLoading} />
+          <LoginForm 
+            onSubmit={handleLogin} 
+            onGoogleLogin={handleGoogleLogin}
+            isLoading={isLoading || isGoogleLoading} 
+          />
 
           <div className="mt-6 text-center">
             <p className="text-sm text-smoky">

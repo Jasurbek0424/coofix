@@ -97,7 +97,17 @@ apiAuth.interceptors.response.use(
           window.dispatchEvent(new Event("storage"));
         }
         // Backend'dan kelgan message'ni ko'rsatish, yoki default message
-        const errorMsg = message || "Неверный email или пароль.";
+        // "Invalid token" yoki "Token expired" holatlari uchun boshqa message
+        let errorMsg = message || "Сеанс истек. Пожалуйста, войдите снова.";
+        if (message?.toLowerCase().includes("invalid token") || 
+            message?.toLowerCase().includes("token expired") ||
+            message?.toLowerCase().includes("token")) {
+          errorMsg = "Сеанс истек. Пожалуйста, войдите снова.";
+        } else if (message?.toLowerCase().includes("invalid password") || 
+                   message?.toLowerCase().includes("password") ||
+                   message?.toLowerCase().includes("email")) {
+          errorMsg = message || "Неверный email или пароль.";
+        }
         const error = new Error(errorMsg) as UnauthorizedError;
         // Add a flag to identify 401 errors
         error.isUnauthorized = true;

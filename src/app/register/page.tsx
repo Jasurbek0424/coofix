@@ -12,10 +12,11 @@ import type { RegistrationFormData } from "@/lib/validations";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { setUser, setToken } = useUser();
+  const { setUser, setToken, loginWithGoogle: loginUserWithGoogle } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleRegister = async (data: RegistrationFormData) => {
     try {
@@ -46,6 +47,7 @@ export default function RegisterPage() {
       } else {
         setError(response.message || "Ошибка при регистрации");
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error("Registration error:", err);
       setError(
@@ -63,6 +65,31 @@ export default function RegisterPage() {
     // This can be implemented if backend has an endpoint to check email
     // For now, return false (email doesn't exist)
     return false;
+  };
+
+  const handleGoogleLogin = async (idToken: string) => {
+    try {
+      setIsGoogleLoading(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      await loginUserWithGoogle(idToken);
+      
+      setSuccessMessage("Регистрация успешна! Перенаправление...");
+      setTimeout(() => {
+        router.push("/profile");
+      }, 1000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error("Google registration error:", err);
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Ошибка при регистрации через Google. Попробуйте еще раз."
+      );
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
@@ -88,7 +115,8 @@ export default function RegisterPage() {
 
           <RegistrationForm
             onSubmit={handleRegister}
-            isLoading={isLoading}
+            onGoogleLogin={handleGoogleLogin}
+            isLoading={isLoading || isGoogleLoading}
             onEmailCheck={checkEmailExists}
           />
 

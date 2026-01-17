@@ -67,8 +67,17 @@ function CatalogContent() {
         // If category or filter params exist, fetch products
         if (categoryParam || filterParam || searchParam) {
           const category = categoriesTree.find(c => c.slug === categoryParam);
+          let selectedSubcategory: Category | null = null;
+          
           if (categoryParam && category) {
             setSelectedCategory(category);
+            
+            // Find subcategory if subParam exists
+            if (subParam && category.children) {
+              selectedSubcategory = category.children.find(
+                (sub) => sub.slug === subParam
+              ) || null;
+            }
           }
 
           // Create cache key for filtered products
@@ -92,46 +101,176 @@ function CatalogContent() {
             return;
           }
 
-          const response = await getProducts({
-            category: categoryParam || undefined,
-            sub: subParam || undefined,
-            filter: filterParam || undefined,
-            search: searchParam || undefined,
-            minPrice: minPriceParam || undefined,
-            maxPrice: maxPriceParam || undefined,
-            page: currentPage,
-            limit: 12,
-          });
-
-          if (response.success && response.products) {
-            // Strictly filter products by category if categoryParam exists
-            let filteredProducts = response.products;
-            if (categoryParam && selectedCategory) {
-              filteredProducts = response.products.filter(
-                (product) =>
-                  product.category &&
-                  (product.category._id === selectedCategory._id || 
-                   product.category.slug === selectedCategory.slug)
-              );
-            }
-            // Also filter by subcategory if subParam exists
-            if (subParam && filteredProducts.length > 0) {
-              filteredProducts = filteredProducts.filter(
-                (product) =>
-                  product.category &&
-                  product.category.parent === selectedCategory?._id
-              );
-            }
-            setProducts(filteredProducts);
-            // Use filtered count for pagination, but fallback to API total if no filtering
-            const totalCount = filteredProducts.length !== response.products.length 
-              ? filteredProducts.length 
-              : response.total;
-            setTotalPages(Math.ceil(totalCount / 12));
+          // If filtering by category, fetch ALL products from all pages
+          // Backend returns paginated results, so we need to fetch all pages
+          const shouldGetAllProducts = categoryParam || subParam;
+          
+          let allProducts: Product[] = [];
+          let totalProducts = 0;
+          
+          if (shouldGetAllProducts) {
+            // Fetch all products by making multiple requests
+            let currentPageNum = 1;
+            const perPage = 100; // Backend might have max limit, try 100 first
+            let hasMore = true;
             
-            // Cache the results
+            while (hasMore) {
+              const response = await getProducts({
+                category: categoryParam || undefined,
+                sub: subParam || undefined,
+                filter: filterParam || undefined,
+                search: searchParam || undefined,
+                minPrice: minPriceParam || undefined,
+                maxPrice: maxPriceParam || undefined,
+                page: currentPageNum,
+                limit: perPage,
+              });
+              
+              if (response.success && response.products) {
+                allProducts = [...allProducts, ...response.products];
+                totalProducts = response.total;
+                
+                console.log(`Fetched page ${currentPageNum}:`, {
+                  productsThisPage: response.products.length,
+                  totalProducts: allProducts.length,
+                  backendTotal: response.total
+                });
+                
+                // Check if there are more products to fetch
+                if (response.products.length < perPage || allProducts.length >= response.total) {
+                  hasMore = false;
+                } else {
+                  currentPageNum++;
+                }
+              } else {
+                hasMore = false;
+              }
+            }
+            
+            // Use allProducts for filtering below
+            console.log('All products fetched:', {
+              totalFetched: allProducts.length,
+              backendTotal: totalProducts,
+              categoryParam,
+              subParam
+            });
+          } else {
+            // Normal pagination for non-category filters
+            const response = await getProducts({
+              category: categoryParam || undefined,
+              sub: subParam || undefined,
+              filter: filterParam || undefined,
+              search: searchParam || undefined,
+              minPrice: minPriceParam || undefined,
+              maxPrice: maxPriceParam || undefined,
+              page: currentPage,
+              limit: 12,
+            });
+            
+            if (response.success && response.products) {
+              allProducts = response.products;
+              totalProducts = response.total;
+            }
+          }
+          
+          // Now filter all products
+          if (allProducts.length > 0) {
+            console.log('API Response:', {
+              total: totalProducts,
+              productsReceived: allProducts.length,
+              categoryParam,
+              subParam,
+              category: category?.name,
+              selectedSubcategory: selectedSubcategory?.name
+            });
+            
+            let filteredProducts = allProducts;
+            
+            if (categoryParam && category) {
+              if (subParam && selectedSubcategory) {
+                // If subcategory is selected, show only products from that subcategory
+                console.log('Filtering by subcategory:', selectedSubcategory.name, selectedSubcategory._id);
+                filteredProducts = allProducts.filter(
+                  (product) =>
+                    product.category &&
+                    product.category._id === selectedSubcategory._id
+                );
+                console.log('Products after subcategory filter:', filteredProducts.length);
+              } else {
+                // If only parent category is selected, show all products from parent and its children
+                // Get all child category IDs
+                const childCategoryIds: string[] = [category._id];
+                if (category.children && category.children.length > 0) {
+                  category.children.forEach((child) => {
+                    childCategoryIds.push(child._id);
+                  });
+                }
+                
+                console.log('Filtering by parent category and children:', {
+                  parentCategory: category.name,
+                  parentId: category._id,
+                  childCategoryIds,
+                  childCategories: category.children?.map(c => ({ name: c.name, _id: c._id }))
+                });
+                
+                // Filter products that belong to parent category or any of its children
+                filteredProducts = allProducts.filter(
+                  (product) => {
+                    if (!product.category) return false;
+                    const matches = childCategoryIds.includes(product.category._id);
+                    if (matches) {
+                      console.log('Product matches:', {
+                        productName: product.name,
+                        categoryId: product.category._id,
+                        categoryName: product.category.name,
+                        categoryParent: product.category.parent
+                      });
+                    }
+                    return matches;
+                  }
+                );
+                console.log('Products after parent category filter:', filteredProducts.length);
+                console.log('All products categories:', allProducts.map(p => ({
+                  name: p.name,
+                  categoryId: p.category?._id,
+                  categoryName: p.category?.name,
+                  categoryParent: p.category?.parent
+                })));
+              }
+            }
+            
+            console.log('Final filtered products count:', filteredProducts.length);
+            
+            // Apply client-side pagination for category-filtered products
+            let paginatedProducts = filteredProducts;
+            let totalCount = filteredProducts.length;
+            
+            if (categoryParam || subParam) {
+              // Client-side pagination for category-filtered products
+              const itemsPerPage = 12;
+              const startIndex = (currentPage - 1) * itemsPerPage;
+              const endIndex = startIndex + itemsPerPage;
+              paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+              console.log('Pagination:', {
+                currentPage,
+                startIndex,
+                endIndex,
+                totalFiltered: filteredProducts.length,
+                paginatedCount: paginatedProducts.length
+              });
+              setTotalPages(Math.ceil(totalCount / itemsPerPage));
+            } else {
+              // Use API pagination for non-category filters
+              totalCount = response.total;
+              setTotalPages(Math.ceil(totalCount / 12));
+            }
+            
+            setProducts(paginatedProducts);
+            
+            // Cache the results (cache all filtered products, not paginated)
             cache.setFilteredProducts(cacheKey, filteredProducts, totalCount);
           } else {
+            console.log('No products in response:', response);
             setProducts([]);
           }
         }
