@@ -261,7 +261,7 @@ function CatalogContent() {
               setTotalPages(Math.ceil(totalCount / itemsPerPage));
             } else {
               // Use API pagination for non-category filters
-              totalCount = response.total;
+              // totalCount is already set from totalProducts above
               setTotalPages(Math.ceil(totalCount / 12));
             }
             
@@ -270,7 +270,7 @@ function CatalogContent() {
             // Cache the results (cache all filtered products, not paginated)
             cache.setFilteredProducts(cacheKey, filteredProducts, totalCount);
           } else {
-            console.log('No products in response:', response);
+            console.log('No products found');
             setProducts([]);
           }
         }
