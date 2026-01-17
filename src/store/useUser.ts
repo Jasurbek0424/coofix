@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { login as loginAPI, logout as logoutAPI, getProfile } from "@/api/auth";
+import { login as loginAPI, logout as logoutAPI, getProfile, loginWithGoogle as loginWithGoogleAPI } from "@/api/auth";
 import type { User, AuthResponse } from "@/types/user";
 
 interface UserState {
@@ -13,6 +13,7 @@ interface UserState {
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
   fetchProfile: () => Promise<void>;
   setUser: (user: User | null) => void;
@@ -72,6 +73,52 @@ export const useUser = create<UserState>()(
               error instanceof Error
                 ? error.message
                 : "An error occurred during login",
+          });
+          throw error;
+        }
+      },
+
+      loginWithGoogle: async (idToken: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await loginWithGoogleAPI({ idToken });
+          const data = response as AuthResponse;
+
+          // Backend accessToken yoki token field'ini tekshirish
+          const token = data.accessToken || data.token;
+
+          if (data.success && data.user && token) {
+            set({
+              user: data.user,
+              token: token,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+            });
+          } else if (data.user && token) {
+            // success flag bo'lmasa ham user va token bo'lsa
+            set({
+              user: data.user,
+              token: token,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+            });
+          } else {
+            set({
+              isLoading: false,
+              error: data.message || "Google login failed",
+            });
+            throw new Error(data.message || "Google login failed");
+          }
+        } catch (error) {
+          console.error("Google login error in store:", error);
+          set({
+            isLoading: false,
+            error:
+              error instanceof Error
+                ? error.message
+                : "An error occurred during Google login",
           });
           throw error;
         }
