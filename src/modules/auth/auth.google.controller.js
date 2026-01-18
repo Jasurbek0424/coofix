@@ -1,7 +1,7 @@
-const admin = require('../../core/config/firebase');
+const { admin } = require('../../core/config/firebase');
 const User = require('../users/user.model');
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../../core/config/env');
+const { JWT_ACCESS_SECRET } = require('../../core/config/env');
 
 exports.googleAuth = async (req, res) => {
   try {
@@ -24,7 +24,7 @@ exports.googleAuth = async (req, res) => {
     }
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      JWT_SECRET,
+      JWT_ACCESS_SECRET,
       { expiresIn: "7d" }
     );
 
