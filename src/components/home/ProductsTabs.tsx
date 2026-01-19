@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import ProductCard from "@/components/ui/Card/ProductCard";
-import { useProducts } from "@/store/useProducts";
-import { useCache } from "@/store/useCache";
+import { getNewProducts, getSaleProducts, getHitsProducts } from "@/api/products";
 import { Loader } from "@/components/shared/Loader";
 import type { Product } from "@/types/product";
 
@@ -15,66 +14,44 @@ interface ProductsTabsProps {
 
 export default function ProductsTabs({ limit = 8 }: ProductsTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>("new");
-  const { products, isLoading, fetchProducts } = useProducts();
-  const cache = useCache();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const filterMap: Record<TabType, string> = {
-      new: "new",
-      promo: "sale",
-      hits: "hits",
-    };
-
     const loadProducts = async () => {
-      const filter = filterMap[activeTab];
-      const cacheKey = `filtered_${filter}_${limit}`;
-      
-      // Check cache first
-      const cachedData = cache.getFilteredProducts(cacheKey);
-      if (cachedData) {
-        // Use cached data - we'll filter it in useMemo
-        return;
+      setIsLoading(true);
+      try {
+        let fetchedProducts: Product[] = [];
+        
+        switch (activeTab) {
+          case "new":
+            fetchedProducts = await getNewProducts(limit * 2); // Fetch more for random selection
+            break;
+          case "promo":
+            fetchedProducts = await getSaleProducts(limit * 2);
+            break;
+          case "hits":
+            fetchedProducts = await getHitsProducts(limit * 2);
+            break;
+        }
+        
+        // Shuffle products randomly
+        const shuffled = [...fetchedProducts].sort(() => Math.random() - 0.5);
+        setProducts(shuffled.slice(0, limit));
+      } catch (error) {
+        console.error(`Error fetching products for ${activeTab}:`, error);
+        setProducts([]);
+      } finally {
+        setIsLoading(false);
       }
-      
-      // Fetch if not in cache
-      const response = await fetchProducts({
-        filter: filter,
-        limit: limit * 2, // Fetch more to filter client-side
-      });
-      
-      // Cache will be handled by useProducts store if needed
     };
 
     loadProducts();
-  }, [activeTab, limit, fetchProducts, cache]);
+  }, [activeTab, limit]);
 
-  // Optimized: Use useMemo to avoid unnecessary recalculations
   const localProducts = useMemo(() => {
-    if (!products || products.length === 0) return [];
-    
-    // Filter products client-side to ensure they match the tab criteria
-    let filtered: Product[] = [];
-    
-    switch (activeTab) {
-      case "new":
-        // Новинки - products with isNew: true
-        filtered = products.filter((p) => p.isNew === true);
-        break;
-      case "promo":
-        // Акции - products with isSale: true
-        filtered = products.filter((p) => p.isSale === true);
-        break;
-      case "hits":
-        // Хиты сезона - products with high rating or hits filter
-        filtered = products.filter((p) => p.ratingAvg >= 4 || p.ratingCount > 10);
-        break;
-      default:
-        filtered = products;
-    }
-    
-    // Limit to the requested number
-    return filtered.slice(0, limit);
-  }, [products, activeTab, limit]);
+    return products.slice(0, limit);
+  }, [products, limit]);
 
   const tabs = [
     { id: "new" as TabType, label: "Новинки" },
@@ -111,7 +88,7 @@ export default function ProductsTabs({ limit = 8 }: ProductsTabsProps) {
             <Loader size="lg" />
           </div>
         ) : localProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
             {localProducts.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}
@@ -125,4 +102,3 @@ export default function ProductsTabs({ limit = 8 }: ProductsTabsProps) {
     </section>
   );
 }
-

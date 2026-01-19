@@ -11,6 +11,7 @@ import { getProducts } from "@/api/products";
 import { getCategories } from "@/api/categories";
 import { Loader } from "@/components/shared/Loader";
 import { useCache } from "@/store/useCache";
+import ProductCard from "@/components/ui/Card/ProductCard";
 import type { Product } from "@/types/product";
 import type { Category } from "@/types/product";
 
@@ -28,9 +29,21 @@ const LazyNewsSection = lazy(() =>
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryProducts, setCategoryProducts] = useState<Record<string, Product[]>>({});
+  const [randomProducts, setRandomProducts] = useState<Product[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   
   const cache = useCache();
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     // Optimized: Progressive loading with cache
@@ -136,8 +149,29 @@ export default function HomePage() {
       }
     };
 
-    fetchCategoryProducts();
+        fetchCategoryProducts();
   }, [cache]);
+
+  useEffect(() => {
+    const fetchRandomProducts = async () => {
+      try {
+        // Fetch products and get random 10
+        const response = await getProducts({
+          limit: 100, // Fetch more to get random selection
+        });
+        
+        if (response.success && response.products && response.products.length > 0) {
+          // Shuffle products randomly
+          const shuffled = [...response.products].sort(() => Math.random() - 0.5);
+          setRandomProducts(shuffled.slice(0, 10));
+        }
+      } catch (error) {
+        console.error("Error fetching random products:", error);
+      }
+    };
+
+    fetchRandomProducts();
+  }, []);
 
   return (
     <main className="flex-1 flex flex-col bg-background min-h-screen">
@@ -172,6 +206,22 @@ export default function HomePage() {
                   />
                 );
               })}
+
+            {/* Наши товары Section - Random 10 products (6 on mobile) */}
+            {randomProducts.length > 0 && (
+              <section className="bg-white dark:bg-dark py-8 lg:py-12">
+                <div className="container mx-auto px-4">
+                  <h2 className="text-2xl md:text-3xl font-bold text-coal dark:text-foreground mb-6 md:mb-8 text-center">
+                    Наши товары
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6">
+                    {(isMobile ? randomProducts.slice(0, 6) : randomProducts).map((product) => (
+                      <ProductCard key={product._id} product={product} />
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
 
       {/* About Us Section - Load in background */}
       <Suspense fallback={<div className="min-h-[400px]" />}>
