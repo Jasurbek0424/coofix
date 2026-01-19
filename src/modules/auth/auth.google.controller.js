@@ -19,8 +19,12 @@ exports.googleAuth = async (req, res) => {
         email,
         provider: 'google',
         password: null,
-        role: 'customer'
+        role: 'customer',
+        isVerified: true
       });
+    } else if (!user.isVerified) {
+      user.isVerified = true;
+      await user.save();
     }
     const token = jwt.sign(
       { id: user._id, role: user.role },
