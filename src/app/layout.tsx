@@ -6,13 +6,13 @@ import { ThemeProvider } from "next-themes";
 import { MarketplaceButtons } from "@/components/shared/MarketplaceButtons";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://coofix.ru"),
+  metadataBase: new URL("https://coofix.store"),
   title: {
     default: "Профессиональные инструменты",
-    template: "%s | COOFIX.RU",
+    template: "%s | COOFIX.STORE",
   },
   description:
-    "COOFIX.RU посвящены доступным инструментам профессионального качества. Известные бренды, такие как Bosch, Makita, Stanley, высококачественные, но слишком дорогие.",
+    "COOFIX.STORE посвящены доступным инструментам профессионального качества. Известные бренды, такие как Bosch, Makita, Stanley, высококачественные, но слишком дорогие.",
   keywords: [
     "Силовые инструменты",
     "Садовые инструменты",
@@ -28,17 +28,17 @@ export const metadata: Metadata = {
     apple: "/favicon.svg",
   },
   openGraph: {
-    title: "COOFIX.RU — Профессиональные инструменты",
+    title: "COOFIX.STORE — Профессиональные инструменты",
     description:
       "Качественные и доступные инструменты для профессионалов и домашних мастеров.",
-    url: "https://coofix.ru",
-    siteName: "COOFIX.RU",
+    url: "https://coofix.store",
+    siteName: "COOFIX.STORE",
     images: [
       {
         url: "/prew__coofix.jpg",
         width: 1200,
         height: 630,
-        alt: "COOFIX.RU",
+        alt: "COOFIX.STORE",
       },
     ],
     locale: "ru_RU",

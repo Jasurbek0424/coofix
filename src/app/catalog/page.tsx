@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense, useMemo } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -261,9 +261,8 @@ function CatalogContent() {
     );
   }
 
-  // Determine page title based on filters
   const getPageTitle = () => {
-    if (filterParam === "promo") return "Акции";
+    if (filterParam === "promo" || filterParam === "sale") return "Акции";
     if (filterParam === "hits") return "Хиты сезона";
     if (filterParam === "new") return "Новинки";
     if (selectedCategory) return selectedCategory.name;
@@ -358,6 +357,8 @@ function CatalogContent() {
                 message={
                   filterParam === "promo"
                     ? "В данный момент акционных товаров нет. Проверьте позже."
+                    : filterParam === "sale"
+                    ? "Товары со скидкой скоро появятся. Следите за обновлениями."
                     : filterParam === "hits"
                     ? "Хиты сезона скоро появятся. Следите за обновлениями."
                     : filterParam === "new"
