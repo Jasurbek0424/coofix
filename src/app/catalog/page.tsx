@@ -110,8 +110,11 @@ function CatalogContent() {
           
           if (shouldGetAllProducts) {
             // Fetch all products by making multiple requests
+            // Strategy:
+            // - If only categoryParam: fetch all products from parent category (backend returns parent + children)
+            // - If subParam exists: fetch with sub param, but we'll also filter on client side for accuracy
             let currentPageNum = 1;
-            const perPage = 100; // Backend might have max limit, try 100 first
+            const perPage = 100;
             let hasMore = true;
             
             while (hasMore) {
@@ -129,7 +132,6 @@ function CatalogContent() {
               if (response.success && response.products) {
                 allProducts = [...allProducts, ...response.products];
                 totalProducts = response.total;
-                
                 
                 // Check if there are more products to fetch
                 if (response.products.length < perPage || allProducts.length >= response.total) {
@@ -162,35 +164,55 @@ function CatalogContent() {
             }
           }
           
-          // Now filter all products
           if (allProducts.length > 0) {
-            
             let filteredProducts = allProducts;
             
+            // First, filter by category/subcategory
             if (categoryParam && category) {
               if (subParam && selectedSubcategory) {
-              } else {
-                // If only parent category is selected, show all products from parent and its children
-                // Get all child category IDs
-                const childCategoryIds: string[] = [category._id];
-                if (category.children && category.children.length > 0) {
-                  category.children.forEach((child) => {
-                    childCategoryIds.push(child._id);
-                  });
-                }
-                
-                
-                
-                // Filter products that belong to parent category or any of its children
                 filteredProducts = allProducts.filter(
                   (product) => {
                     if (!product.category) return false;
-                    const matches = childCategoryIds.includes(product.category._id);
-                    return matches;
+                    const matchesId = product.category._id === selectedSubcategory._id;
+                    const matchesSlug = product.category.slug === selectedSubcategory.slug;
+                    const matchesParent = product.category.parent === selectedSubcategory._id;
+                    return matchesId || matchesSlug || matchesParent;
                   }
                 );
+              } else {
+                const validCategoryIds: string[] = [category._id];
+                const validCategorySlugs: string[] = [category.slug];
                 
+                if (category.children && category.children.length > 0) {
+                  category.children.forEach((child) => {
+                    validCategoryIds.push(child._id);
+                    validCategorySlugs.push(child.slug);
+                  });
+                }
+                
+                filteredProducts = allProducts.filter(
+                  (product) => {
+                    if (!product.category) return false;
+                    const matchesId = validCategoryIds.includes(product.category._id);
+                    const matchesSlug = validCategorySlugs.includes(product.category.slug);
+                    const matchesParent = product.category.parent === category._id;
+                    return matchesId || matchesSlug || matchesParent;
+                  }
+                );
               }
+            }
+            
+            // Then, apply price filter on client side (for category-filtered products)
+            if (minPriceParam || maxPriceParam) {
+              const minPrice = minPriceParam ? parseFloat(minPriceParam) : 0;
+              const maxPrice = maxPriceParam ? parseFloat(maxPriceParam) : Infinity;
+              
+              filteredProducts = filteredProducts.filter(
+                (product) => {
+                  const productPrice = product.price || 0;
+                  return productPrice >= minPrice && productPrice <= maxPrice;
+                }
+              );
             }
             
            
