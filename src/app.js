@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser');
 const app = express();
 
 app.use(cors({
-  origin: ["http://localhost:3000", "https://coofix-admin.vercel.app/", "https://coofix-admin.vercel.app", "http://localhost:3001", "https://coofix-admin-dashboard.netlify.app/", "https://coofix-admin-dashboard.netlify.app", "http://localhost:5173", "http://localhost:8080"],
+  origin: ["http://localhost:3000", "https://www.coofix.store", "https://coofix-admin.vercel.app/", "https://coofix-admin.vercel.app", "http://localhost:3001", "https://coofix-admin-dashboard.netlify.app/", "https://coofix-admin-dashboard.netlify.app", "http://localhost:5173", "http://localhost:8080"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"]
