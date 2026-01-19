@@ -32,6 +32,51 @@ export async function getProducts(
   return response.data;
 }
 
+export async function getNewProducts(limit?: number): Promise<Product[]> {
+  try {
+    const response = await api.get<ProductsResponse>(
+      `/products/new${limit ? `?limit=${limit}` : ""}`
+    );
+    if (response.data.success && response.data.products) {
+      return response.data.products;
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching new products:", error);
+    return [];
+  }
+}
+
+export async function getSaleProducts(limit?: number): Promise<Product[]> {
+  try {
+    const response = await api.get<ProductsResponse>(
+      `/products/sale${limit ? `?limit=${limit}` : ""}`
+    );
+    if (response.data.success && response.data.products) {
+      return response.data.products;
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching sale products:", error);
+    return [];
+  }
+}
+
+export async function getHitsProducts(limit?: number): Promise<Product[]> {
+  try {
+    const response = await api.get<ProductsResponse>(
+      `/products/hits${limit ? `?limit=${limit}` : ""}`
+    );
+    if (response.data.success && response.data.products) {
+      return response.data.products;
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching hits products:", error);
+    return [];
+  }
+}
+
 export async function getProductById(id: string): Promise<Product> {
   const response = await api.get<{ success: boolean; product: Product }>(`/products/${id}`);
   return response.data.product;

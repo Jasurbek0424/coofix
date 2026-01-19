@@ -48,7 +48,7 @@ export async function getProfile(): Promise<AuthResponse> {
 }
 
 export async function updateProfile(data: UpdateProfileData): Promise<AuthResponse> {
-  const res = await apiAuth.put<AuthResponse>("/users/profile", data);
+  const res = await apiAuth.patch<AuthResponse>("/auth/profile", data);
   return res.data;
 }
 
