@@ -31,6 +31,7 @@ export async function GET(
           return NextResponse.json(data);
         }
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       // Continue to fallback method
     }
