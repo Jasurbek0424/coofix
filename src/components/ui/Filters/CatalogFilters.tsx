@@ -16,14 +16,16 @@ export default function CatalogFilters({
 }: CatalogFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
+  const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") || "");
+  const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "");
   const [selectedSub, setSelectedSub] = useState<string | null>(
     searchParams.get("sub")
   );
 
   useEffect(() => {
     setSelectedSub(searchParams.get("sub"));
+    setMinPrice(searchParams.get("minPrice") || "");
+    setMaxPrice(searchParams.get("maxPrice") || "");
   }, [searchParams]);
 
   const handleSubcategoryClick = (subSlug: string) => {
