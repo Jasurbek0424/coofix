@@ -133,43 +133,83 @@ export default function OrderHistoryPage() {
             {isExpanded && (
               <div className="p-4 border-t border-gray max-h-96 overflow-y-auto">
                 <div className="space-y-3">
-                  {order.items.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-4 pb-3 border-b border-gray/50 last:border-0"
-                    >
-                      <div className="shrink-0 w-16 h-16 bg-gray rounded overflow-hidden">
-                        {item.product.images?.[0] ? (
-                          <Image
-                            src={typeof item.product.images[0] === "string" ? item.product.images[0] : ""}
-                            alt={item.product.name}
-                            width={64}
-                            height={64}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gray flex items-center justify-center text-xs text-smoky">
-                            Нет фото
+                  {order.items.map((item, index) => {
+                    if (!item.product) {
+                      return (
+                        <div
+                          key={index}
+                          className="flex items-center gap-4 pb-3 border-b border-gray/50 last:border-0"
+                        >
+                          <div className="shrink-0 w-16 h-16 bg-gray rounded overflow-hidden flex items-center justify-center">
+                            <div className="w-full h-full bg-gray flex items-center justify-center text-xs text-smoky">
+                              Нет фото
+                            </div>
                           </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-foreground text-sm truncate">
-                          {item.product.name}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-smoky text-sm">
-                            {item.price} ₽ × {item.quantity}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-foreground text-sm truncate">
+                              Товар удален
+                            </h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-smoky text-sm">
+                                {item.price} ₽ × {item.quantity}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 text-right">
+                            <span className="font-semibold text-foreground">
+                              {item.price * item.quantity} ₽
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    const productImage = item.product.images?.[0];
+                    const imageUrl = typeof productImage === "string" 
+                      ? productImage 
+                      : (productImage && typeof productImage === "object" && "url" in productImage)
+                      ? productImage.url
+                      : null;
+
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center gap-4 pb-3 border-b border-gray/50 last:border-0"
+                      >
+                        <div className="shrink-0 w-16 h-16 bg-gray rounded overflow-hidden">
+                          {imageUrl ? (
+                            <Image
+                              src={imageUrl}
+                              alt={item.product.name || "Product"}
+                              width={64}
+                              height={64}
+                              className="w-full h-full object-cover"
+                              unoptimized={imageUrl.startsWith("http") || imageUrl.startsWith("//")}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray flex items-center justify-center text-xs text-smoky">
+                              Нет фото
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-foreground text-sm truncate">
+                            {item.product.name || "Товар"}
+                          </h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-smoky text-sm">
+                              {item.price} ₽ × {item.quantity}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0 text-right">
+                          <span className="font-semibold text-foreground">
+                            {item.price * item.quantity} ₽
                           </span>
                         </div>
                       </div>
-                      <div className="flex-shrink-0 text-right">
-                        <span className="font-semibold text-foreground">
-                          {item.price * item.quantity} ₽
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <div className="mt-4 pt-4 border-t-2 border-gray">
                   <div className="flex justify-end">

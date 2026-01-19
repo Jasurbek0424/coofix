@@ -130,11 +130,6 @@ function CatalogContent() {
                 allProducts = [...allProducts, ...response.products];
                 totalProducts = response.total;
                 
-                console.log(`Fetched page ${currentPageNum}:`, {
-                  productsThisPage: response.products.length,
-                  totalProducts: allProducts.length,
-                  backendTotal: response.total
-                });
                 
                 // Check if there are more products to fetch
                 if (response.products.length < perPage || allProducts.length >= response.total) {
@@ -147,13 +142,6 @@ function CatalogContent() {
               }
             }
             
-            // Use allProducts for filtering below
-            console.log('All products fetched:', {
-              totalFetched: allProducts.length,
-              backendTotal: totalProducts,
-              categoryParam,
-              subParam
-            });
           } else {
             // Normal pagination for non-category filters
             const response = await getProducts({
@@ -169,33 +157,18 @@ function CatalogContent() {
             
             if (response.success && response.products) {
               allProducts = response.products;
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               totalProducts = response.total;
             }
           }
           
           // Now filter all products
           if (allProducts.length > 0) {
-            console.log('API Response:', {
-              total: totalProducts,
-              productsReceived: allProducts.length,
-              categoryParam,
-              subParam,
-              category: category?.name,
-              selectedSubcategory: selectedSubcategory?.name
-            });
             
             let filteredProducts = allProducts;
             
             if (categoryParam && category) {
               if (subParam && selectedSubcategory) {
-                // If subcategory is selected, show only products from that subcategory
-                console.log('Filtering by subcategory:', selectedSubcategory.name, selectedSubcategory._id);
-                filteredProducts = allProducts.filter(
-                  (product) =>
-                    product.category &&
-                    product.category._id === selectedSubcategory._id
-                );
-                console.log('Products after subcategory filter:', filteredProducts.length);
               } else {
                 // If only parent category is selected, show all products from parent and its children
                 // Get all child category IDs
@@ -206,40 +179,21 @@ function CatalogContent() {
                   });
                 }
                 
-                console.log('Filtering by parent category and children:', {
-                  parentCategory: category.name,
-                  parentId: category._id,
-                  childCategoryIds,
-                  childCategories: category.children?.map(c => ({ name: c.name, _id: c._id }))
-                });
+                
                 
                 // Filter products that belong to parent category or any of its children
                 filteredProducts = allProducts.filter(
                   (product) => {
                     if (!product.category) return false;
                     const matches = childCategoryIds.includes(product.category._id);
-                    if (matches) {
-                      console.log('Product matches:', {
-                        productName: product.name,
-                        categoryId: product.category._id,
-                        categoryName: product.category.name,
-                        categoryParent: product.category.parent
-                      });
-                    }
                     return matches;
                   }
                 );
-                console.log('Products after parent category filter:', filteredProducts.length);
-                console.log('All products categories:', allProducts.map(p => ({
-                  name: p.name,
-                  categoryId: p.category?._id,
-                  categoryName: p.category?.name,
-                  categoryParent: p.category?.parent
-                })));
+                
               }
             }
             
-            console.log('Final filtered products count:', filteredProducts.length);
+           
             
             // Apply client-side pagination for category-filtered products
             let paginatedProducts = filteredProducts;
@@ -251,13 +205,6 @@ function CatalogContent() {
               const startIndex = (currentPage - 1) * itemsPerPage;
               const endIndex = startIndex + itemsPerPage;
               paginatedProducts = filteredProducts.slice(startIndex, endIndex);
-              console.log('Pagination:', {
-                currentPage,
-                startIndex,
-                endIndex,
-                totalFiltered: filteredProducts.length,
-                paginatedCount: paginatedProducts.length
-              });
               setTotalPages(Math.ceil(totalCount / itemsPerPage));
             } else {
               // Use API pagination for non-category filters
@@ -270,7 +217,6 @@ function CatalogContent() {
             // Cache the results (cache all filtered products, not paginated)
             cache.setFilteredProducts(cacheKey, filteredProducts, totalCount);
           } else {
-            console.log('No products found');
             setProducts([]);
           }
         }
