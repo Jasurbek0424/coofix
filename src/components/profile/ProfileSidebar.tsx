@@ -6,6 +6,8 @@ import Image from "next/image";
 import clsx from "clsx";
 import { useUser } from "@/store/useUser";
 import { FiLogOut } from "react-icons/fi";
+import NewsPhoto from "@/assets/news__photo.png";
+import SalesPhoto from "@/assets/sales__photo.png";
 
 interface ProfileSidebarProps {
   className?: string;
@@ -41,13 +43,15 @@ export function ProfileSidebar({ className }: ProfileSidebarProps) {
   const promotions = [
     {
       title: "Новое поступление",
-      subtitle: "Успей покататься",
-      image: "/images/promotion-1.jpg", // Placeholder - replace with actual image
+      subtitle: "Самые свежие товары",
+      href: "/catalog?filter=new",
+      image: NewsPhoto,
     },
     {
-      title: "Печи со скидкой",
-      subtitle: "до 30%",
-      image: "/images/promotion-2.jpg", // Placeholder - replace with actual image
+      title: "Товары со скидкой",
+      subtitle: "Акции и распродажи",
+      href: "/catalog?filter=sale",
+      image: SalesPhoto,
     },
   ];
 
@@ -89,18 +93,26 @@ export function ProfileSidebar({ className }: ProfileSidebarProps) {
         {/* Promotions */}
         <div className="space-y-4">
           {promotions.map((promo, index) => (
-            <div
+            <Link
               key={index}
-              className="relative h-48 rounded-lg overflow-hidden group cursor-pointer"
+              href={promo.href}
+              className="relative h-48 rounded-lg overflow-hidden group cursor-pointer block"
             >
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
+              <div className="absolute inset-0 z-0">
+                <Image
+                  src={promo.image}
+                  alt={promo.title}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-110"
+                  sizes="(max-width: 768px) 100vw, 256px"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 group-hover:from-black/70 transition-colors" />
               <div className="absolute bottom-4 left-4 right-4 z-20 text-white">
                 <h3 className="font-semibold text-lg mb-1">{promo.title}</h3>
                 <p className="text-sm">{promo.subtitle}</p>
               </div>
-              {/* Placeholder for image - replace with actual Image component */}
-              <div className="w-full h-full bg-gradient-to-br from-orange/20 to-coal" />
-            </div>
+            </Link>
           ))}
         </div>
       </div>
