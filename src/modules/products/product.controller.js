@@ -15,8 +15,9 @@ exports.getAll = async (req, res) => {
       .sort({ createdAt: -1 });
 
     const total = await Product.countDocuments();
+    const pages = Math.ceil(total / limit);
 
-    res.json({ success: true, products, total });
+    res.json({ success: true, products, total, page, pages });
 
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

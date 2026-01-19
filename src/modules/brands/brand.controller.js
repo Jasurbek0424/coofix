@@ -22,8 +22,22 @@ exports.create = async (req, res) => {
 };
 
 exports.getAll = async (req, res) => {
-  const brands = await Brand.find().sort({ createdAt: -1 });
-  res.json({ success: true, brands });
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const [brands, total] = await Promise.all([
+      Brand.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Brand.countDocuments()
+    ]);
+
+    const pages = Math.ceil(total / limit);
+
+    res.json({ success: true, brands, total, page, pages });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 };
 
 exports.getOne = async (req, res) => {
