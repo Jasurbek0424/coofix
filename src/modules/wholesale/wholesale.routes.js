@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const controller = require('./wholesale.controller');
+const upload = require('../../core/utils/upload');
 
 /**
  * @swagger
@@ -17,7 +18,7 @@ const controller = require('./wholesale.controller');
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
@@ -38,14 +39,15 @@ const controller = require('./wholesale.controller');
  *                 type: string
  *               file:
  *                 type: string
- *                 description: URL of the attached file
+ *                 format: binary
+ *                 description: Attached file (PDF/Image)
  *     responses:
  *       201:
  *         description: Application submitted successfully
  *       500:
  *         description: Server error
  */
-router.post('/', controller.createWholesale);
+router.post('/', upload.single('file'), controller.createWholesale);
 
 /**
  * @swagger

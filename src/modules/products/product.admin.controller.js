@@ -15,7 +15,8 @@ exports.create = async (req, res) => {
       characteristics,
       quantity,
       isNew,
-      isSale
+      isSale,
+      isHit
     } = req.body;
 
     const slug = makeSlug(name);
@@ -32,7 +33,8 @@ exports.create = async (req, res) => {
       characteristics: characteristics || {},
       stock: quantity || 0,
       isNew: isNew || false,
-      isSale: isSale || false
+      isSale: isSale || false,
+      isHit: isHit || false
     });
 
     res.json({ success: true, product });

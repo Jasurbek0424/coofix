@@ -46,6 +46,7 @@ const productSchema = new mongoose.Schema(
 
     isNew: { type: Boolean, default: false },
     isSale: { type: Boolean, default: false },
+    isHit: { type: Boolean, default: false },
 
     ratingAvg: { type: Number, default: 0 },
     ratingCount: { type: Number, default: 0 },

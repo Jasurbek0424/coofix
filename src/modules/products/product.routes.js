@@ -57,6 +57,8 @@ const controller = require('./product.controller');
  *           type: boolean
  *         isSale:
  *           type: boolean
+ *         isHit:
+ *           type: boolean
  *         ratingAvg:
  *           type: number
  *           example: 4.8
@@ -119,24 +121,6 @@ router.get('/', controller.getAll);
 
 /**
  * @swagger
- * /products/{slug}:
- *   get:
- *     summary: Товар по slug
- *     tags: [Product]
- *     parameters:
- *       - in: path
- *         name: slug
- *         required: true
- *         schema: { type: string }
- *         example: iphone-15-pro-max
- *     responses:
- *       200:
- *         $ref: '#/components/responses/ProductSuccess'
- */
-router.get('/:slug', controller.getOne);
-
-/**
- * @swagger
  * /products/new:
  *   get:
  *     summary: Новинки
@@ -158,6 +142,18 @@ router.get('/new', controller.getNew);
  *         $ref: '#/components/responses/ProductsList'
  */
 router.get('/sale', controller.getSale);
+
+/**
+ * @swagger
+ * /products/hits:
+ *   get:
+ *     summary: Хиты сезона
+ *     tags: [Product]
+ *     responses:
+ *       200:
+ *         $ref: '#/components/responses/ProductsList'
+ */
+router.get('/hits', controller.getHits);
 
 /**
  * @swagger
@@ -264,5 +260,23 @@ router.get('/category/:slug', controller.getByCategory);
  *         $ref: '#/components/responses/ProductsList'
  */
 router.get('/brand/:slug', controller.getByBrand);
+
+/**
+ * @swagger
+ * /products/{slug}:
+ *   get:
+ *     summary: Товар по slug
+ *     tags: [Product]
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema: { type: string }
+ *         example: iphone-15-pro-max
+ *     responses:
+ *       200:
+ *         $ref: '#/components/responses/ProductSuccess'
+ */
+router.get('/:slug', controller.getOne);
 
 module.exports = router;

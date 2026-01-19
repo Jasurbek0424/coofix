@@ -59,6 +59,18 @@ exports.getSale = async (req, res) => {
   }
 };
 
+exports.getHits = async (req, res) => {
+  try {
+    const products = await Product.find({ isHit: true })
+      .populate('category brand')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, products });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 exports.search = async (req, res) => {
   try {
     const q = req.query.q;

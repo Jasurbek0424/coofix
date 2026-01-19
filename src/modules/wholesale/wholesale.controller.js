@@ -1,8 +1,15 @@
 const Wholesale = require('./wholesale.model');
+const uploadToCloudinary = require('../../core/utils/uploadToCloudinary');
 
 exports.createWholesale = async (req, res) => {
     try {
-        const { name, surname, email, phone, comment, file } = req.body;
+        const { name, surname, email, phone, comment } = req.body;
+        let fileUrl = null;
+
+        if (req.file) {
+            const uploaded = await uploadToCloudinary(req.file, 'ecommerce/wholesale', 'auto');
+            fileUrl = uploaded.url;
+        }
 
         const wholesale = new Wholesale({
             name,
@@ -10,7 +17,7 @@ exports.createWholesale = async (req, res) => {
             email,
             phone,
             comment,
-            file,
+            file: fileUrl,
             status: "new"
         });
 
