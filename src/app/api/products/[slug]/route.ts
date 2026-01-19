@@ -33,7 +33,6 @@ export async function GET(
       }
     } catch (error) {
       // Continue to fallback method
-      console.log("Slug endpoint not available, trying fallback method");
     }
 
     // Fallback: Get all products and filter by slug

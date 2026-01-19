@@ -1,5 +1,5 @@
-// lib/firebase.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -12,10 +12,11 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Prevent double init during hot reload
 export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Analytics must run only in browser
+export const auth = typeof window !== "undefined" ? getAuth(app) : null;
+export const googleProvider = new GoogleAuthProvider();
+
 export const analytics = async () => {
   if (typeof window !== "undefined") {
     const supported = await isSupported();
