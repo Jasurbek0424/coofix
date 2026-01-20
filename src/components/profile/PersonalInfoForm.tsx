@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 // Toast functionality will be handled via state
 
 export function PersonalInfoForm() {
-  const { user, fetchProfile } = useUser();
+  const { user, fetchProfile, setUser } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -28,10 +28,24 @@ export function PersonalInfoForm() {
   // Update form when user data loads
   useEffect(() => {
     if (user) {
-      // Backend'dan name kelayotgan bo'lsa, uni firstName ga map qilamiz
+      // Parse name field if firstName/lastName are not available
+      let firstName = user.firstName || "";
+      let lastName = user.lastName || "";
+      
+      // If name exists but firstName/lastName don't, try to split name
+      if ((!firstName || !lastName) && user.name) {
+        const nameParts = user.name.trim().split(/\s+/);
+        if (nameParts.length > 0 && !firstName) {
+          firstName = nameParts[0] || "";
+        }
+        if (nameParts.length > 1 && !lastName) {
+          lastName = nameParts.slice(1).join(" ") || "";
+        }
+      }
+      
       reset({
-        lastName: user.lastName || "",
-        firstName: user.firstName || user.name || "",
+        lastName: lastName || "",
+        firstName: firstName || "",
         phone: user.phone || "",
         email: user.email || "",
         city: user.city || "",
@@ -48,12 +62,22 @@ export function PersonalInfoForm() {
       setIsLoading(true);
       setErrorMessage(null);
       setSuccessMessage(null);
-      await updateProfile(data);
+      
+      const response = await updateProfile(data);
+      
+      // If response contains updated user, update store immediately
+      if (response && response.user) {
+        setUser(response.user);
+      }
+      
+      // Also fetch fresh profile from backend
       await fetchProfile();
       setSuccessMessage("Данные успешно сохранены");
       setTimeout(() => setSuccessMessage(null), 3000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Failed to update profile:", error);
+      console.error("Error response:", error?.response?.data);
       setErrorMessage(error?.response?.data?.message || "Ошибка при сохранении данных");
       setTimeout(() => setErrorMessage(null), 5000);
     } finally {

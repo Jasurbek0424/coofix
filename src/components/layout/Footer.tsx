@@ -22,18 +22,8 @@ export default function Footer() {
         });
         
         if (mainCategories && mainCategories.length > 0) {
-          // Filter only specific categories for footer
-          const footerCategories = mainCategories.filter((category) => {
-            const categoryName = category.name.toLowerCase();
-            return (
-              categoryName.includes("аккумуляторные инструменты") ||
-              categoryName.includes("электроинструменты") ||
-              categoryName.includes("компрессоры") ||
-              categoryName.includes("насосное оборудование") ||
-              categoryName.includes("пылесосы строительные")
-            );
-          });
-          
+          // Show first 7 main categories in footer
+          const footerCategories = mainCategories.slice(0, 7);
           setCategories(footerCategories);
         } else {
           setCategories([]);
