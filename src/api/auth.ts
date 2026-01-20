@@ -48,7 +48,22 @@ export async function getProfile(): Promise<AuthResponse> {
 }
 
 export async function updateProfile(data: UpdateProfileData): Promise<AuthResponse> {
-  const res = await apiAuth.patch<AuthResponse>("/auth/profile", data);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const payload: any = {
+    name: data.firstName || "",
+    lastName: data.lastName || "",
+    phone: data.phone || "",
+    email: data.email || "",
+    address: {
+      city: data.city || "",
+      street: data.street || "",
+      house: data.house || "",
+      building: data.building || "",
+      apartment: data.apartment || "",
+    },
+  };
+
+  const res = await apiAuth.put<AuthResponse>("/users/profile", payload);
   return res.data;
 }
 
