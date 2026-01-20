@@ -332,7 +332,7 @@ export default function Header() {
                   href="/news"
                   className="text-white hover:text-orange transition-colors font-medium"
                 >
-                  Новинки
+                  Новости
                 </Link>
                 <Link
                   href="/wholesale"

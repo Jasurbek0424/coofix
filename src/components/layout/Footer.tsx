@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Logo from "../../assets/logo.png";
 import { SocialIcons } from "@/components/ui/Icons/SocialIcons";
-import { getCategories } from "@/api/categories";
+import { getCategoriesTree } from "@/api/categories";
 import type { Category } from "@/types/product";
 
 export default function Footer() {
@@ -16,14 +16,19 @@ export default function Footer() {
     const fetchCategories = async () => {
       try {
         setIsLoading(true);
-        const mainCategories = await getCategories(null).catch((error) => {
+        const categoriesTree = await getCategoriesTree().catch((error) => {
           console.error("Error fetching categories for footer:", error);
           return [];
         });
         
-        if (mainCategories && mainCategories.length > 0) {
-          // Show first 7 main categories in footer
-          const footerCategories = mainCategories.slice(0, 7);
+        if (categoriesTree && categoriesTree.length > 0) {
+          // Faqat parent category'larni olish (children'ga ega bo'lganlar)
+          const parentCategories = categoriesTree.filter(
+            (category) => category.children && category.children.length > 0
+          );
+          
+          // Show first 7 parent categories in footer
+          const footerCategories = parentCategories.slice(0, 7);
           setCategories(footerCategories);
         } else {
           setCategories([]);
@@ -39,6 +44,8 @@ export default function Footer() {
     fetchCategories();
   }, []);
 
+  console.log();
+  
   return (
     <footer className="bg-coal text-white">
       <div className="container mx-auto px-4 py-12">
