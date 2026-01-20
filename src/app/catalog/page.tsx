@@ -10,7 +10,7 @@ import { Loader } from "@/components/shared/Loader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { getCategoriesTree } from "@/api/categories";
-import { getProducts } from "@/api/products";
+import { getProducts, getSaleProducts, getHitsProducts } from "@/api/products";
 import ProductCard from "@/components/ui/Card/ProductCard";
 import CatalogFilters from "@/components/ui/Filters/CatalogFilters";
 import { useCache } from "@/store/useCache";
@@ -43,109 +43,34 @@ function CatalogContent() {
         setIsLoading(true);
         setError(null);
 
-        // Check cache first for categories tree
+        // 1. Kategoriyalarni yuklash (Cache orqali)
         let categoriesTree = cache.getCategoriesTree();
-        
         if (!categoriesTree) {
-          // Fetch categories tree from API if not in cache
           categoriesTree = await getCategoriesTree();
           cache.setCategoriesTree(categoriesTree);
         }
-        
         setCategories(categoriesTree);
 
-        // Build subcategories map from tree structure
-        const subcategoriesMap: Record<string, Category[]> = {};
-        categoriesTree.forEach((category) => {
-          if (category.children && category.children.length > 0) {
-            subcategoriesMap[category._id] = category.children;
-          }
+        const subMap: Record<string, Category[]> = {};
+        categoriesTree.forEach((c) => {
+          if (c.children) subMap[c._id] = c.children;
         });
+        setSubcategoriesMap(subMap);
 
-        setSubcategoriesMap(subcategoriesMap);
-
-        // If category or filter params exist, fetch products
+        // 2. Mahsulotlarni olish
         if (categoryParam || filterParam || searchParam) {
           const category = categoriesTree.find(c => c.slug === categoryParam);
-          let selectedSubcategory: Category | null = null;
-          
-          if (categoryParam && category) {
-            setSelectedCategory(category);
-            
-            // Find subcategory if subParam exists
-            if (subParam && category.children) {
-              selectedSubcategory = category.children.find(
-                (sub) => sub.slug === subParam
-              ) || null;
-            }
-          }
+          if (category) setSelectedCategory(category);
 
-          // Create cache key for filtered products
-          const cacheKey = JSON.stringify({
-            category: categoryParam,
-            sub: subParam,
-            filter: filterParam,
-            search: searchParam,
-            minPrice: minPriceParam,
-            maxPrice: maxPriceParam,
-            page: currentPage,
-          });
-          
-          // Check cache first
-          const cachedData = cache.getFilteredProducts(cacheKey);
-          
-          if (cachedData) {
-            setProducts(cachedData.products);
-            setTotalPages(Math.ceil(cachedData.total / 12));
-            setIsLoading(false);
-            return;
-          }
-
-          // If filtering by category, fetch ALL products from all pages
-          // Backend returns paginated results, so we need to fetch all pages
-          const shouldGetAllProducts = categoryParam || subParam;
-          
           let allProducts: Product[] = [];
-          let totalProducts = 0;
           
-          if (shouldGetAllProducts) {
-            // Fetch all products by making multiple requests
-            // Strategy:
-            // - If only categoryParam: fetch all products from parent category (backend returns parent + children)
-            // - If subParam exists: fetch with sub param, but we'll also filter on client side for accuracy
-            let currentPageNum = 1;
-            const perPage = 100;
-            let hasMore = true;
-            
-            while (hasMore) {
-              const response = await getProducts({
-                category: categoryParam || undefined,
-                sub: subParam || undefined,
-                filter: filterParam || undefined,
-                search: searchParam || undefined,
-                minPrice: minPriceParam || undefined,
-                maxPrice: maxPriceParam || undefined,
-                page: currentPageNum,
-                limit: perPage,
-              });
-              
-              if (response.success && response.products) {
-                allProducts = [...allProducts, ...response.products];
-                totalProducts = response.total;
-                
-                // Check if there are more products to fetch
-                if (response.products.length < perPage || allProducts.length >= response.total) {
-                  hasMore = false;
-                } else {
-                  currentPageNum++;
-                }
-              } else {
-                hasMore = false;
-              }
-            }
-            
+          // Maxsus filtrlar uchun (Sale va Hits)
+          if (filterParam === "sale" || filterParam === "promo") {
+            allProducts = await getSaleProducts();
+          } else if (filterParam === "hits") {
+            allProducts = await getHitsProducts();
           } else {
-            // Normal pagination for non-category filters
+            // Oddiy katalog yoki qidiruv uchun
             const response = await getProducts({
               category: categoryParam || undefined,
               sub: subParam || undefined,
@@ -153,94 +78,67 @@ function CatalogContent() {
               search: searchParam || undefined,
               minPrice: minPriceParam || undefined,
               maxPrice: maxPriceParam || undefined,
-              page: currentPage,
-              limit: 12,
+              page: 1, // Biz client-side paginatsiya qilamiz
+              limit: 1000, 
             });
-            
-            if (response.success && response.products) {
-              allProducts = response.products;
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              totalProducts = response.total;
-            }
+            if (response.success) allProducts = response.products || [];
           }
-          
-          if (allProducts.length > 0) {
-            let filteredProducts = allProducts;
-            
-            // First, filter by category/subcategory
-            if (categoryParam && category) {
-              if (subParam && selectedSubcategory) {
-                filteredProducts = allProducts.filter(
-                  (product) => {
-                    if (!product.category) return false;
-                    const matchesId = product.category._id === selectedSubcategory._id;
-                    const matchesSlug = product.category.slug === selectedSubcategory.slug;
-                    const matchesParent = product.category.parent === selectedSubcategory._id;
-                    return matchesId || matchesSlug || matchesParent;
-                  }
-                );
-              } else {
-                const validCategoryIds: string[] = [category._id];
-                const validCategorySlugs: string[] = [category.slug];
-                
-                if (category.children && category.children.length > 0) {
-                  category.children.forEach((child) => {
-                    validCategoryIds.push(child._id);
-                    validCategorySlugs.push(child.slug);
-                  });
-                }
-                
-                filteredProducts = allProducts.filter(
-                  (product) => {
-                    if (!product.category) return false;
-                    const matchesId = validCategoryIds.includes(product.category._id);
-                    const matchesSlug = validCategorySlugs.includes(product.category.slug);
-                    const matchesParent = product.category.parent === category._id;
-                    return matchesId || matchesSlug || matchesParent;
-                  }
+
+          // 3. Client-side Filtratsiya (Agar kategoriya ichida bo'lsa)
+          let filtered = [...allProducts];
+
+          if (categoryParam && category) {
+            if (subParam) {
+              // Subcategory bo'lsa, faqat o'sha subcategory'ga tegishli tovarlar
+              const subcategory = category.children?.find(c => c.slug === subParam);
+              if (subcategory) {
+                filtered = filtered.filter(p => 
+                  p.category?._id === subcategory._id ||
+                  p.category?.slug === subcategory.slug ||
+                  p.category?.parent === subcategory._id
                 );
               }
-            }
-            
-            // Then, apply price filter on client side (for category-filtered products)
-            if (minPriceParam || maxPriceParam) {
-              const minPrice = minPriceParam ? parseFloat(minPriceParam) : 0;
-              const maxPrice = maxPriceParam ? parseFloat(maxPriceParam) : Infinity;
+            } else {
+              // Parent category bo'lsa, parent va barcha children'larga tegishli tovarlar
+              const validCategoryIds: string[] = [category._id];
+              const validCategorySlugs: string[] = [category.slug];
               
-              filteredProducts = filteredProducts.filter(
-                (product) => {
-                  const productPrice = product.price || 0;
-                  return productPrice >= minPrice && productPrice <= maxPrice;
-                }
+              if (category.children && category.children.length > 0) {
+                category.children.forEach((child) => {
+                  validCategoryIds.push(child._id);
+                  validCategorySlugs.push(child.slug);
+                });
+              }
+              
+              filtered = filtered.filter(p => 
+                p.category && (
+                  validCategoryIds.includes(p.category._id) ||
+                  validCategorySlugs.includes(p.category.slug) ||
+                  p.category.parent === category._id
+                )
               );
             }
-            
-           
-            
-            // Apply client-side pagination for category-filtered products
-            let paginatedProducts = filteredProducts;
-            const totalCount = filteredProducts.length;
-            
-            if (categoryParam || subParam) {
-              // Client-side pagination for category-filtered products
-              const itemsPerPage = 12;
-              const startIndex = (currentPage - 1) * itemsPerPage;
-              const endIndex = startIndex + itemsPerPage;
-              paginatedProducts = filteredProducts.slice(startIndex, endIndex);
-              setTotalPages(Math.ceil(totalCount / itemsPerPage));
-            } else {
-              // Use API pagination for non-category filters
-              // totalCount is already set from totalProducts above
-              setTotalPages(Math.ceil(totalCount / 12));
-            }
-            
-            setProducts(paginatedProducts);
-            
-            // Cache the results (cache all filtered products, not paginated)
-            cache.setFilteredProducts(cacheKey, filteredProducts, totalCount);
-          } else {
-            setProducts([]);
           }
+
+          // Narx bo'yicha filtr
+          if (minPriceParam || maxPriceParam) {
+            const min = Number(minPriceParam) || 0;
+            const max = Number(maxPriceParam) || Infinity;
+            filtered = filtered.filter(p => (p.price || 0) >= min && (p.price || 0) <= max);
+          }
+
+          // 4. Random Shuffle (Aksiya va Xitlar uchun Navigatsiyadan kelganda)
+          if ((filterParam === "sale" || filterParam === "promo" || filterParam === "hits") && !categoryParam) {
+            filtered.sort(() => Math.random() - 0.5);
+          }
+
+          // 5. Paginatsiya hisoblash
+          const itemsPerPage = (filterParam === "sale" || filterParam === "promo" || filterParam === "hits") ? 20 : 12;
+          const total = filtered.length;
+          setTotalPages(Math.ceil(total / itemsPerPage));
+          
+          const startIndex = (currentPage - 1) * itemsPerPage;
+          setProducts(filtered.slice(startIndex, startIndex + itemsPerPage));
         }
       } catch (err) {
         console.error("Error fetching data:", err);
