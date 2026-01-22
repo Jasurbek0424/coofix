@@ -3,17 +3,21 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { StaticImageData } from "next/image";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { Loader } from "@/components/shared/Loader";
 import { EmptyState } from "@/components/shared/EmptyState";
+import HeroMain from "@/assets/hero__main copy.jpg";
+import HeroMain2 from "@/assets/hero__main_2.jpg";
+import PrevCoofix from "@/assets/prew__coofix.jpg";
 
 interface NewsItem {
   id: string;
   title: string;
   date: string;
-  image?: string;
+  image?: string | StaticImageData;
   excerpt?: string;
   content?: string;
 }
@@ -34,21 +38,39 @@ export default function NewsPage() {
         // const response = await getNews();
         // setNews(response);
         
-        // Temporary placeholder data
+        // Temporary placeholder data - matching NewsSection
         setNews([
           {
             id: "1",
-            title: "Новые поступления в нашем каталоге",
-            date: "15 января 2024",
+            title: "Новые поступления",
+            date: "12 января 2026",
+            image: PrevCoofix,
             excerpt: "Мы рады представить вам новую коллекцию инструментов и оборудования.",
-            content: "Полный текст новости...",
+            content: "Мы рады представить вам новую коллекцию инструментов и оборудования. В нашем каталоге появились новинки от ведущих производителей. Все инструменты прошли строгий контроль качества и готовы к использованию.",
           },
           {
             id: "2",
-            title: "Специальные предложения на электроинструменты",
-            date: "10 января 2024",
+            title: "Специальные предложения электроинструментов",
+            date: "9 января 2026",
+            image: HeroMain2,
             excerpt: "Большие скидки на все электроинструменты до конца месяца.",
-            content: "Полный текст новости...",
+            content: "Большие скидки на все электроинструменты до конца месяца. Не упустите возможность приобрести качественные инструменты по выгодным ценам. Акция действует ограниченное время.",
+          },
+          {
+            id: "3",
+            title: "Специальные предложения оптовикам",
+            date: "7 января 2026",
+            image: HeroMain,
+            excerpt: "Выгодные условия для оптовых покупателей и юридических лиц.",
+            content: "Выгодные условия для оптовых покупателей и юридических лиц. Специальные цены, индивидуальные условия оплаты и доставки. Свяжитесь с нами для получения персонального предложения.",
+          },
+          {
+            id: "4",
+            title: "Накопление бонусов с Coofix",
+            date: "6 января 2026",
+            image: PrevCoofix,
+            excerpt: "Копите бонусы с каждой покупки и оплачивайте ими до 99% стоимости заказа.",
+            content: "Копите бонусы с каждой покупки и оплачивайте ими до 99% стоимости заказа. Чем больше вы покупаете, тем больше бонусов получаете. Присоединяйтесь к программе лояльности Coofix уже сегодня!",
           },
         ]);
       } catch (err) {

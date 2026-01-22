@@ -212,10 +212,10 @@ export default function Header() {
 
               <div className="hidden lg:flex flex-col items-center gap-2 text-white shrink-0">
                 <a
-                  href="tel:+74951203214"
+                  href="tel:+79969900094"
                   className="text-sm hover:text-orange transition-colors"
                 >
-                  +7 495 120-32-14
+                  +7(996)990-00-94
                 </a>
                 <button
                   onClick={(e) => {
@@ -399,10 +399,10 @@ export default function Header() {
                 Контакты:
               </p>
               <a
-                href="tel:+74951203214"
+                href="tel:+79969900094"
                 className="text-lg text-coal dark:text-white hover:text-orange transition-colors block"
               >
-                +7 495 120-32-14
+                +7(996)990-00-94
               </a>
               <button
                 onClick={(e) => {

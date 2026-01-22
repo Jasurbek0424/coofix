@@ -43,8 +43,8 @@ export default function AboutSection() {
                 Ваш успех — наш приоритет!
               </p>
             </div>
-            <Link href="/catalog">
-              <Button variant="primary">ПЕРЕЙТИ В КАТАЛОГ</Button>
+            <Link href="/about">
+              <Button variant="primary">Подробнее</Button>
             </Link>
           </div>
         </div>
