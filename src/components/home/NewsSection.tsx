@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Buttons/Button";
 import HeroMain from "@/assets/hero__main copy.jpg";
 import HeroMain2 from "@/assets/hero__main_2.jpg";
 import PrevCoofix from "@/assets/prew__coofix.jpg";
+import NewsBg from "@/assets/news_bg.jpg";
 
 interface NewsItem {
   id: string;
@@ -24,26 +25,26 @@ interface NewsSectionProps {
 const defaultNews: NewsItem[] = [
   {
     id: "1",
-    title: "Название новости",
-    date: "12 января 2023",
+    title: "Новые поступления",
+    date: "12 января 2026",
     image: PrevCoofix,
   },
   {
     id: "2",
-    title: "Название новости",
-    date: "12 января 2023",
+    title: "Специальные предложения электроинструментов",
+    date: "9 января 2026",
     image: HeroMain2,
   },
   {
     id: "3",
-    title: "Название новости",
-    date: "12 января 2023",
+    title: "Специальные предложения оптовикам",
+    date: "7 января 2026",
     image: HeroMain,
   },
   {
     id: "4",
-    title: "Название новости",
-    date: "12 января 2023",
+    title: "Скидки на садовые инструменты",
+    date: "6 января 2026",
     image: PrevCoofix,
   },
 ];
@@ -53,15 +54,29 @@ export default function NewsSection({
   title = "Новости",
 }: NewsSectionProps) {
   return (
-    <section className="bg-white dark:bg-dark py-12 lg:py-16">
-      <div className="container mx-auto px-4">
+    <section className="relative bg-coal py-12 lg:py-16 overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src={NewsBg}
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover opacity-80 dark:opacity-70"
+          priority={false}
+        />
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-coal/30 dark:bg-coal/40"></div>
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Left: Title and Description */}
           <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-bold text-coal dark:text-foreground">
+            <h2 className="text-3xl md:text-4xl font-bold text-white">
               {title}
             </h2>
-            <div className="space-y-4 text-gray-600 dark:text-gray-400 text-lg">
+            <div className="space-y-4 text-white/80 text-lg">
               <p>
                 Следите за последними новостями и обновлениями в мире инструментов.
                 Узнавайте о новых поступлениях, специальных предложениях и полезных
@@ -76,7 +91,7 @@ export default function NewsSection({
           {/* Right: News Grid */}
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold text-coal dark:text-foreground">
+              <h3 className="text-xl font-semibold text-white">
                 Последние новости
               </h3>
               <Link
@@ -108,10 +123,10 @@ export default function NewsSection({
                       </div>
                     )}
                   </div>
-                  <h4 className="text-sm md:text-base font-semibold text-coal dark:text-foreground group-hover:text-orange transition-colors mb-1">
+                  <h4 className="text-sm md:text-base font-semibold text-white group-hover:text-orange transition-colors mb-1">
                     {item.title}
                   </h4>
-                  <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-xs md:text-sm text-white/70">
                     {item.date}
                   </p>
                 </Link>

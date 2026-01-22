@@ -56,10 +56,10 @@ export default function Contacts() {
                       Телефон
                     </h3>
                     <a
-                      href="tel:+79969900094"
+                      href="tel:+79267370337"
                       className="text-lg font-medium text-smoky transition-colors hover:text-orange "
                     >
-                      +7 (996) 990-00-94
+                      +7(926)737-03-37
                     </a>
                   </div>
                 </div>

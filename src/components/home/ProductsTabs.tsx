@@ -88,10 +88,12 @@ export default function ProductsTabs({ limit = 8 }: ProductsTabsProps) {
             <Loader size="lg" />
           </div>
         ) : localProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-            {localProducts.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
+          <div className="flex justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 w-full max-w-7xl">
+              {localProducts.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
           </div>
         ) : (
           <div className="text-center py-12 text-white/70">

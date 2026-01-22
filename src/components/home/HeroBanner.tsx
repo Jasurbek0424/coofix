@@ -15,6 +15,7 @@ import HeroMain2 from "@/assets/hero__main_2.jpg";
 import Banner2 from "@/assets/banner2.jpg";
 import Banner3 from "@/assets/banner3.jpg";
 import PrevCoofix from "@/assets/prew__coofix.jpg";
+import AdditionalBg from "@/assets/additional__bg.png";
 
 interface Banner {
   id: string;
@@ -93,8 +94,23 @@ export default function HeroBanner({
   const swiperRef = useRef<SwiperType | null>(null);
 
   return (
-    <section className="container mx-auto px-4 py-6 lg:py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
+    <section className="relative w-full -mt-4 overflow-hidden">
+      {/* Background Image - Full Screen but only for this section */}
+      <div className="absolute inset-0 z-0 w-full">
+        <Image
+          src={AdditionalBg}
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover opacity-40 dark:opacity-30"
+          priority={false}
+        />
+        {/* Overlay for better readability */}
+        <div className="absolute inset-0 bg-background/20 dark:bg-background/30"></div>
+      </div>
+      
+      <div className="container mx-auto px-4 pt-2 pb-6 lg:pt-4 lg:py-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
         {/* Main Banner Swiper */}
         <div className="lg:col-span-3 relative rounded-xl overflow-hidden h-64 md:h-96 lg:h-[500px]">
           <Swiper className="h-full"
@@ -193,6 +209,7 @@ export default function HeroBanner({
               </div> */}
             </Link>
           ))}
+        </div>
         </div>
       </div>
     </section>

@@ -5,11 +5,15 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import {
   HeroBanner,
+  FeaturesSection,
+  SocialMediaSection,
 } from "@/components/home";
 import { getProducts } from "@/api/products";
 import { Loader } from "@/components/shared/Loader";
 import ProductCard from "@/components/ui/Card/ProductCard";
 import type { Product } from "@/types/product";
+import Image from "next/image";
+import S2Bg from "@/assets/s2.jpg";
 
 // Lazy load non-critical sections
 const LazyAboutSection = lazy(() => 
@@ -60,9 +64,12 @@ export default function HomeClient() {
     <main className="flex-1 flex flex-col bg-background min-h-screen">
       <Header />
 
-      <div className="flex-1 flex-grow">
+      <div className="flex-1 grow">
         {/* Hero Banner Section */}
         <HeroBanner />
+
+        {/* Features Section - 5 feature cards */}
+        <FeaturesSection />
 
         {/* Наши товары Section - Random 10 products (6 on mobile) */}
         {loadingRandomProducts ? (
@@ -70,9 +77,45 @@ export default function HomeClient() {
             <Loader size="lg" />
           </div>
         ) : randomProducts.length > 0 && (
-          <section className="bg-white dark:bg-dark py-8 lg:py-12">
-            <div className="container mx-auto px-4">
-              <h2 className="text-2xl md:text-3xl font-bold text-coal dark:text-foreground mb-6 md:mb-8 text-center">
+          <section className="relative bg-gray-50 dark:bg-coal py-8 lg:py-12 overflow-hidden">
+            {/* Background Image */}
+            <div className="absolute inset-0 z-0">
+              <Image
+                src={S2Bg}
+                alt=""
+                fill
+                sizes="100vw"
+                className="object-cover opacity-20 dark:opacity-15"
+                priority={false}
+              />
+              {/* Dark overlay for better readability */}
+              <div className="absolute inset-0 bg-gray-50/80 dark:bg-coal/80"></div>
+            </div>
+
+            {/* Decorative Background Elements */}
+            <div className="absolute inset-0 opacity-5 dark:opacity-10 z-0">
+              <div className="absolute top-0 left-0 w-full h-full">
+                {/* Diagonal Lines */}
+                <div className="absolute top-10 left-0 w-40 h-px bg-orange transform rotate-12"></div>
+                <div className="absolute top-20 right-10 w-32 h-px bg-orange transform -rotate-12"></div>
+                <div className="absolute top-1/3 left-1/4 w-24 h-px bg-orange transform rotate-45"></div>
+                <div className="absolute top-1/2 right-1/4 w-28 h-px bg-orange transform -rotate-45"></div>
+                <div className="absolute bottom-20 left-10 w-48 h-px bg-orange transform rotate-12"></div>
+                <div className="absolute bottom-10 right-0 w-36 h-px bg-orange transform -rotate-12"></div>
+                
+                {/* Vertical Lines */}
+                <div className="absolute top-0 left-1/4 w-px h-full bg-orange opacity-30"></div>
+                <div className="absolute top-0 right-1/4 w-px h-full bg-orange opacity-30"></div>
+                <div className="absolute top-0 left-1/2 w-px h-full bg-orange opacity-20"></div>
+                <div className="absolute top-0 right-1/2 w-px h-full bg-orange opacity-20"></div>
+              </div>
+            </div>
+
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-linear-to-br from-orange/5 via-transparent to-orange/5 dark:from-orange/10 dark:via-transparent dark:to-orange/10 z-0"></div>
+
+            <div className="container mx-auto px-4 relative z-10">
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8 text-center">
                 Наши товары
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-6">
@@ -98,6 +141,9 @@ export default function HomeClient() {
         <Suspense fallback={<div className="min-h-[400px]" />}>
           <LazyNewsSection />
         </Suspense>
+
+        {/* Social Media Section - Мы в соц сетях */}
+        <SocialMediaSection />
       </div>
 
       <div className="mt-auto">

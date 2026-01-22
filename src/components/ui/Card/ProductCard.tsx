@@ -123,9 +123,10 @@ const ProductCard = memo(function ProductCard({
         bg-white dark:bg-dark
         rounded-2xl p-4 w-[300px] cursor-pointer
         transition-all duration-300 
-        border border-gray-200 dark:border-coal
+        border border-gray-200 dark:border-gray-700
         shadow-lg hover:shadow-2xl hover:-translate-y-2 hover:border-orange/30
         block
+        relative z-10
       "
     >
       {/* Icons */}

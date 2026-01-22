@@ -125,6 +125,14 @@ export default function Footer() {
                   Распродажи
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/payment-delivery"
+                  className="text-gray-smoky hover:text-orange transition-colors"
+                >
+                  Оплата и доставка
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -142,16 +150,16 @@ export default function Footer() {
             </div>
             <div className="space-y-2">
               <a
-                href="tel:+74951203214"
+                href="tel:+79267370337"
                 className="block text-gray-smoky hover:text-orange transition-colors"
               >
-                +7 495 120-32-14
+                +7(926)737-03-37
               </a>
               <a
                 href="tel:+74951203215"
                 className="block text-gray-smoky hover:text-orange transition-colors"
               >
-                +7 495 120-32-15
+                +7(996)990-00-94
               </a>
             </div>
           </div>
