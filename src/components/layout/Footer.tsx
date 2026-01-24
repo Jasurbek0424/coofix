@@ -44,7 +44,7 @@ export default function Footer() {
     fetchCategories();
   }, []);
 
-  console.log();
+ 
   
   return (
     <footer className="bg-coal text-white">
