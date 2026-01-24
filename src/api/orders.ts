@@ -1,9 +1,9 @@
 import { apiAuth } from "./axios";
 import type { OrdersResponse, Order } from "@/types/order";
 
-// GET /orders - Получить список заказов пользователя
+// GET /orders/my - Получить список заказов текущего пользователя
 export async function getOrders(): Promise<Order[]> {
-  const res = await apiAuth.get<OrdersResponse>("/orders");
+  const res = await apiAuth.get<OrdersResponse>("/orders/my");
   // Response: { success: true, orders: [] }
   if (res.data.success && Array.isArray(res.data.orders)) {
     return res.data.orders;
@@ -11,9 +11,11 @@ export async function getOrders(): Promise<Order[]> {
   return [];
 }
 
-// GET /orders/:id - Получить заказ по ID
+// GET /orders/:id - Получить заказ по ID (используется при необходимости)
 export async function getOrderById(orderId: string): Promise<Order | null> {
-  const res = await apiAuth.get<{ success: boolean; order?: Order }>(`/orders/${orderId}`);
+  const res = await apiAuth.get<{ success: boolean; order?: Order }>(
+    `/orders/${orderId}`
+  );
   if (res.data.success && res.data.order) {
     return res.data.order;
   }

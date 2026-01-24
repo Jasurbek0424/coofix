@@ -13,13 +13,51 @@ import { OrderForm } from "@/components/ui/Forms";
 import { useModal } from "@/hooks/useModal";
 import type { OrderFormData } from "@/lib/validations";
 import { useRouter } from "next/navigation";
+import type { ProductImage } from "@/types/product";
+import { apiAuth } from "@/api/axios";
 
-const formatPrice = (price: number) => 
-  price.toLocaleString("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 });
+const formatPrice = (price: number) =>
+  price.toLocaleString("ru-RU", {
+    style: "currency",
+    currency: "RUB",
+    maximumFractionDigits: 0,
+  });
+
+// Helper: get first image URL from product images (string | { url })
+const getImageUrl = (
+  images?: (string | ProductImage)[]
+): string | null => {
+  if (!images || images.length === 0) return null;
+  const img = images[0];
+
+  if (typeof img === "string") {
+    return img.trim() || null;
+  }
+
+  if (img && typeof img === "object" && "url" in img) {
+    return img.url?.trim() || null;
+  }
+
+  return null;
+};
+
+// Helper: safe JSON parsing to avoid "Unexpected token '<'" errors
+async function safeParseJson<T = unknown>(response: Response): Promise<T | null> {
+  try {
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      return null;
+    }
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  }
+}
 
 export default function CartItems() {
-  const { items, total, removeItem, incrementItem, decrementItem, clearCart } = useCart();
-  const { user } = useUser();
+  const { items, total, removeItem, incrementItem, decrementItem, clearCart } =
+    useCart();
+  const { user, token } = useUser();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -50,32 +88,97 @@ export default function CartItems() {
         total: total,
       };
 
-      // Send to Telegram (for notifications)
-      const telegramResponse = await fetch("/api/orders/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(orderPayload),
-      });
+      // 1) Send to Telegram (notification via Next.js API)
+      let telegramOk = false;
+      let telegramMessage: string | undefined;
 
-      const telegramResult = await telegramResponse.json();
+      try {
+        const telegramResponse = await fetch("/api/orders/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(orderPayload),
+        });
 
-      // Send to backend API (for database)
-      const backendResponse = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(orderPayload),
-      });
+        const telegramResult = await safeParseJson<{
+          success?: boolean;
+          message?: string;
+        }>(telegramResponse);
 
-      const backendResult = await backendResponse.json();
+        telegramOk =
+          telegramResponse.ok &&
+          (telegramResult?.success === undefined || telegramResult.success);
+        telegramMessage = telegramResult?.message;
+
+        if (!telegramOk) {
+          console.error(
+            "Telegram order error:",
+            telegramResponse.status,
+            telegramResponse.statusText,
+            telegramResult
+          );
+        }
+      } catch (err) {
+        console.error("Telegram request failed:", err);
+        telegramOk = false;
+      }
+
+      // 2) Send to backend API (database) directly with auth token
+      let backendOk = false;
+      let backendMessage: string | undefined;
+
+      try {
+        // Shape expected by backend: no productName, only productId/quantity/price
+        const backendOrderData = {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phone: data.phone,
+          email: data.email || undefined,
+          city: data.city,
+          street: data.street,
+          building: data.building,
+          house: data.house || undefined,
+          apartment: data.apartment || undefined,
+          comment: data.comment || undefined,
+          items: orderItems.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          total,
+        };
+
+        const backendResponse = await apiAuth.post<{
+          success?: boolean;
+          message?: string;
+        }>("/orders", backendOrderData, {
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`,
+              }
+            : undefined,
+        });
+
+        backendOk =
+          backendResponse.status >= 200 &&
+          backendResponse.status < 300 &&
+          (backendResponse.data?.success === undefined ||
+            backendResponse.data.success);
+        backendMessage = backendResponse.data?.message;
+      } catch (err) {
+        console.error("Backend order error:", err);
+        backendOk = false;
+        backendMessage =
+          err instanceof Error ? err.message : "Ошибка при отправке заказа";
+      }
 
       // Check if at least one request succeeded
-      if (!telegramResponse.ok && !backendResponse.ok) {
+      if (!telegramOk && !backendOk) {
         throw new Error(
-          telegramResult.message || backendResult.message || "Ошибка при оформлении заказа"
+          telegramMessage ||
+            backendMessage ||
+            "Ошибка при оформлении заказа"
         );
       }
 
@@ -103,10 +206,11 @@ export default function CartItems() {
   // Get default values from user profile if available
   const getDefaultValues = (): Partial<OrderFormData> => {
     if (!user) return { phone: "+7" };
-    
+
     return {
       firstName: user.firstName || user.name?.split(" ")[0] || "",
-      lastName: user.lastName || user.name?.split(" ").slice(1).join(" ") || "",
+      lastName:
+        user.lastName || user.name?.split(" ").slice(1).join(" ") || "",
       phone: user.phone || "+7",
       email: user.email || "",
       city: user.city || "",
@@ -141,71 +245,91 @@ export default function CartItems() {
             const productTotal = item.product.price * item.quantity;
 
             return (
-                <div 
-                    key={item.product._id} 
-                    className="flex flex-col sm:flex-row items-start sm:items-center bg-white dark:bg-dark p-4 rounded-lg shadow-sm border border-gray-200 dark:border-coal transition-shadow hover:shadow-md"
+                <div
+                  key={item.product._id}
+                  className="flex flex-col sm:flex-row items-start sm:items-center bg-white dark:bg-dark p-4 rounded-lg shadow-sm border border-gray-200 dark:border-coal transition-shadow hover:shadow-md"
                 >
-                    
-                    {/* Rasm va Link */}
-                    <Link href={`/product/${item.product.slug}`} className="shrink-0 mr-4">
+                  {/* Rasm va Link */}
+                  <Link
+                    href={`/product/${item.product.slug}`}
+                    className="shrink-0 mr-4"
+                  >
+                    {(() => {
+                      const imageUrl =
+                        getImageUrl(item.product.images) ||
+                        "/prew__coofix.jpg";
+                      const isRemote =
+                        typeof imageUrl === "string" &&
+                        (imageUrl.startsWith("http") ||
+                          imageUrl.startsWith("//"));
+
+                      return (
                         <Image
-                            src={typeof item.product.images?.[0] === "string" ? item.product.images[0] : "/placeholder-product.png"}
-                            alt={item.product.name}
-                            width={80}
-                            height={80}
-                            className="object-contain rounded-md"
+                          src={imageUrl}
+                          alt={item.product.name}
+                          width={80}
+                          height={80}
+                          className="object-contain rounded-md"
+                          unoptimized={isRemote}
                         />
-                    </Link>
+                      );
+                    })()}
+                  </Link>
                     
-                    <div className="flex-1 min-w-0 mt-3 sm:mt-0">
-                        {/* Nomi */}
-                        <Link href={`/product/${item.product.slug}`} className="text-lg font-medium text-foreground hover:text-orange transition-colors line-clamp-2">
-                            {item.product.name}
-                        </Link>
-                        {/* Narxi (birlik uchun) */}
-                        <p className="text-sm text-smoky mt-1">
-                            Цена за шт: <span className="font-semibold">{formatPrice(item.product.price)}</span>
-                        </p>
+                  <div className="flex-1 min-w-0 mt-3 sm:mt-0">
+                    {/* Nomi */}
+                    <Link
+                      href={`/product/${item.product.slug}`}
+                      className="text-lg font-medium text-foreground hover:text-orange transition-colors line-clamp-2"
+                    >
+                      {item.product.name}
+                    </Link>
+                    {/* Narxi (birlik uchun) */}
+                    <p className="text-sm text-smoky mt-1">
+                      Цена за шт:{" "}
+                      <span className="font-semibold">
+                        {formatPrice(item.product.price)}
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="flex flex-row items-center gap-4 mt-4 sm:mt-0 sm:ml-4 shrink-0 justify-between w-full sm:w-auto">
+                    {/* Miqdorni boshqarish tugmalari */}
+                    <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg">
+                      <button
+                        onClick={() => decrementItem(item.product._id)}
+                        disabled={item.quantity <= 1}
+                        className="w-8 h-8 flex items-center justify-center text-lg text-foreground disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-coal/50 rounded-l-lg transition-colors"
+                        aria-label="Уменьшить количество"
+                      >
+                        -
+                      </button>
+                      <span className="w-8 h-8 flex items-center justify-center border-l border-r border-gray-300 dark:border-gray-600 text-foreground text-base font-medium">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => incrementItem(item.product._id)}
+                        className="w-8 h-8 flex items-center justify-center text-lg text-foreground hover:bg-gray-100 dark:hover:bg-coal/50 rounded-r-lg transition-colors"
+                        aria-label="Увеличить количество"
+                      >
+                        +
+                      </button>
                     </div>
 
-                    <div className="flex flex-row items-center gap-4 mt-4 sm:mt-0 sm:ml-4 shrink-0 justify-between w-full sm:w-auto">
-                        
-                        {/* Miqdorni boshqarish tugmalari */}
-                        <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg">
-                            <button 
-                                onClick={() => decrementItem(item.product._id)}
-                                disabled={item.quantity <= 1}
-                                className="w-8 h-8 flex items-center justify-center text-lg text-foreground disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-coal/50 rounded-l-lg transition-colors"
-                                aria-label="Уменьшить количество"
-                            >
-                                -
-                            </button>
-                            <span className="w-8 h-8 flex items-center justify-center border-l border-r border-gray-300 dark:border-gray-600 text-foreground text-base font-medium">
-                                {item.quantity}
-                            </span>
-                            <button 
-                                onClick={() => incrementItem(item.product._id)}
-                                className="w-8 h-8 flex items-center justify-center text-lg text-foreground hover:bg-gray-100 dark:hover:bg-coal/50 rounded-r-lg transition-colors"
-                                aria-label="Увеличить количество"
-                            >
-                                +
-                            </button>
-                        </div>
-                        
-                        {/* Umumiy narx */}
-                        <p className="font-bold text-lg text-foreground min-w-[100px] text-right">
-                            {formatPrice(productTotal)}
-                        </p>
+                    {/* Umumiy narx */}
+                    <p className="font-bold text-lg text-foreground min-w-[100px] text-right">
+                      {formatPrice(productTotal)}
+                    </p>
 
-                        {/* O'chirish tugmasi */}
-                        <button 
-                            onClick={() => removeItem(item.product._id)}
-                            className="text-gray-500 hover:text-red-500 transition-colors text-xl p-2 rounded-full"
-                            aria-label="Удалить из корзины"
-                        >
-                            <FiTrash2 size={20} />
-                        </button>
-                    </div>
+                    {/* O'chirish tugmasi */}
+                    <button
+                      onClick={() => removeItem(item.product._id)}
+                      className="text-gray-500 hover:text-red-500 transition-colors text-xl p-2 rounded-full"
+                      aria-label="Удалить из корзины"
+                    >
+                      <FiTrash2 size={20} />
+                    </button>
+                  </div>
                 </div>
             );
           })}
