@@ -14,6 +14,7 @@ router.use('/orders', require('./modules/orders/order.routes'));
 router.use('/reviews', require('./modules/reviews/review.routes'))
 router.use('/wholesale', require('./modules/wholesale/wholesale.routes'));
 router.use('/upload', require('./modules/upload/upload.routes'));
+router.use('/chat', require('./modules/chat/chat.routes'));
 
 router.use('/admin/products', require('./modules/products/product.admin.routes'));
 router.use('/stats', require('./modules/stats/stats.routes'));
