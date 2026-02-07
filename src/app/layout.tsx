@@ -4,6 +4,7 @@ import { Noto_Sans } from "next/font/google";
 
 import { ThemeProvider } from "next-themes";
 import { MarketplaceButtons } from "@/components/shared/MarketplaceButtons";
+import { ChatBot } from "@/components/shared/ChatBot";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://coofix.store"),
@@ -74,6 +75,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
           <MarketplaceButtons />
+          <ChatBot />
         </ThemeProvider>
       </body>
     </html>

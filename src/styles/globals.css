@@ -145,3 +145,17 @@ body {
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #f05a00;
 }
+
+/* ChatBot button - subtle pulse scale animation */
+@keyframes pulse-scale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.chatbot-btn-pulse {
+  animation: pulse-scale 2s ease-in-out infinite;
+}
+
+.chatbot-btn-pulse:hover {
+  animation-play-state: paused;
+}
