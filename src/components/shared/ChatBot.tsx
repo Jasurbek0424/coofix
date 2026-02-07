@@ -14,20 +14,6 @@ const AI_GREETING =
 
 const STORAGE_KEY = "coofix-chat-messages";
 
-function loadStoredMessages(): Message[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const stored = sessionStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch {
-    /* ignore */
-  }
-  return [];
-}
-
 export function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -39,10 +25,19 @@ export function ChatBot() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   };
 
-  // Load messages from sessionStorage on mount (persists across reloads, clears when tab closes)
+  // Load messages from sessionStorage on mount
   useEffect(() => {
-    const stored = loadStoredMessages();
-    if (stored.length > 0) setMessages(stored);
+    try {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   // Save messages to sessionStorage whenever they change
@@ -112,10 +107,8 @@ export function ChatBot() {
 
   return (
     <>
-      {/* Floating button */}
       {!isOpen && (
         <div className="fixed bottom-20 left-auto right-4 z-40 h-14 w-14 sm:bottom-6 sm:right-6">
-          {/* Pulsing ring - attention grabber */}
           <span
             className="absolute inset-0 rounded-full bg-orange animate-ping opacity-40"
             aria-hidden
@@ -130,14 +123,12 @@ export function ChatBot() {
         </div>
       )}
 
-      {/* Chat modal - responsive: full-width on mobile, bottom-right on desktop */}
       {isOpen && (
         <div className="fixed left-4 right-4 bottom-4 z-50 flex min-h-[55vh] max-h-[80vh] flex-col overflow-hidden rounded-xl border border-gray bg-dark shadow-2xl sm:min-h-0 sm:left-auto sm:right-6 sm:bottom-6 sm:h-[420px] sm:w-[360px]">
-          {/* Header */}
           <div className="flex items-center justify-between border-b border-gray px-4 py-3">
             <span className="flex items-center gap-2 font-semibold text-foreground">
               <FaRobot size={18} className="text-orange" />
-              AI-помощник (test)
+              AI-помощник
             </span>
             <button
               onClick={() => setIsOpen(false)}
@@ -148,7 +139,6 @@ export function ChatBot() {
             </button>
           </div>
 
-          {/* Messages */}
           <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto p-4 space-y-4"
@@ -178,7 +168,6 @@ export function ChatBot() {
             )}
           </div>
 
-          {/* Input */}
           <div className="border-t border-gray p-3">
             <div className="flex gap-2">
               <input
