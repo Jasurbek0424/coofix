@@ -157,6 +157,7 @@ npm install
 NEXT_PUBLIC_API_URL=https://coofix.store/api
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 TELEGRAM_CHAT_ID=your_telegram_chat_id
+GROQ_API_KEY=your_groq_api_key
 ```
 
 4. **Запуск dev-сервера**
@@ -199,6 +200,7 @@ npm run lint
 | `NEXT_PUBLIC_API_URL` | URL backend API | `https://coofix.store/api` |
 | `TELEGRAM_BOT_TOKEN` | Токен Telegram бота | `123456789:ABCdefGHIjklMNOpqrsTUVwxyz` |
 | `TELEGRAM_CHAT_ID` | ID Telegram группы для уведомлений | `-1001234567890` |
+| `GROQ_API_KEY` | API ключ GROQ для AI-чата | `gsk_...` |
 
 ## 📱 Основные страницы
 
