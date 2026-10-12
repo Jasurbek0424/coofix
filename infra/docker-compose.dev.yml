@@ -1,0 +1,20 @@
+# Local development services. Usage: docker compose -f infra/docker-compose.dev.yml up -d
+name: coofix-dev
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: coofix
+      POSTGRES_PASSWORD: coofix
+      POSTGRES_DB: coofix
+    ports: ["127.0.0.1:5442:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data, ./postgres-init:/docker-entrypoint-initdb.d:ro]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coofix"]
+      interval: 2s
+      retries: 20
+  redis:
+    image: redis:7-alpine
+    ports: ["127.0.0.1:6380:6379"]
+volumes:
+  pgdata:
