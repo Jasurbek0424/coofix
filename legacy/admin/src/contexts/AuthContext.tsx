@@ -1,0 +1,171 @@
+// src/context/AuthContext.tsx
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
+import {
+  authApi,
+  setAccessToken,
+  clearAccessToken,
+  getAccessToken,
+  setUser as setStorageUser,
+  getUser as getStorageUser,
+  clearUser as clearStorageUser,
+  User,
+} from '@/lib/api';
+import toast from 'react-hot-toast';
+
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  googleLogin: () => Promise<void>;
+  logout: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 🔄 Проверка сессии при старте
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = getAccessToken();
+      const storedUser = getStorageUser();
+
+      // Если есть токен и юзер в сторедже - сразу логиним
+      if (token && storedUser) {
+        setUser(storedUser);
+      }
+
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await authApi.me();
+
+        if (response.success && response.user) {
+          setUser(response.user);
+          setStorageUser(response.user); // Обновляем данные если изменились
+        } else {
+          clearAccessToken();
+          clearStorageUser();
+          setUser(null);
+        }
+      } catch (err) {
+        // Если API упало, но у нас есть локальные данные - оставляем пользователя залогиненным
+        // Но если это 401 - api.ts уже почистит токен
+        if (!getAccessToken()) {
+          setUser(null);
+          clearStorageUser();
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+  }, []);
+
+  // 🔐 Login
+  const login = async (email: string, password: string) => {
+    try {
+      setIsLoading(true);
+
+      const response = await authApi.login(email, password);
+
+      if (!response.success) {
+        throw new Error('Ошибка входа');
+      }
+
+      // ✅ сохраняем и accessToken и user
+      setAccessToken(response.accessToken);
+      setStorageUser(response.user);
+      setUser(response.user);
+
+      toast.success(`Добро пожаловать, ${response.user.name}!`);
+    } catch (error: any) {
+      toast.error(error.message || 'Неверный email или пароль');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 🌐 Google Login
+  const googleLogin = async () => {
+    try {
+      setIsLoading(true);
+      const { signInWithPopup, GoogleAuthProvider } = await import("firebase/auth");
+      const { auth, googleProvider } = await import("@/lib/firebase");
+
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+
+      const response = await authApi.googleLogin(idToken);
+
+      if (!response.success) {
+        throw new Error('Google Sign-In Failed on Backend');
+      }
+
+      setAccessToken(response.token);
+      setStorageUser(response.user);
+      setUser(response.user);
+
+      toast.success(`Добро пожаловать, ${response.user.name}!`);
+    } catch (error: any) {
+      console.error("Google Auth Error:", error);
+      toast.error('Ошибка авторизации через Google');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 🚪 Logout
+  const logout = async () => {
+    try {
+      await authApi.logout(); // 👈 backend очистит httpOnly cookie
+    } catch {
+      // даже если запрос упал — чистим локально
+    } finally {
+      clearAccessToken();
+      clearStorageUser();
+
+      setUser(null);
+      toast.success('Вы вышли из аккаунта');
+      window.location.href = '/login';
+    }
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        login,
+        googleLogin,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
