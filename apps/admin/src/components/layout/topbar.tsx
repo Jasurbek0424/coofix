@@ -1,4 +1,5 @@
-import { LogOutIcon, MenuIcon, MonitorIcon, MoonIcon, SearchIcon, SunIcon } from "lucide-react";
+import { KeyRoundIcon, LogOutIcon, MenuIcon, MonitorIcon, MoonIcon, SearchIcon, SunIcon } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Kbd } from "@/components/ui/kbd";
+import { ChangePasswordDialog } from "@/components/layout/change-password-dialog";
 import { t } from "@/i18n/ru";
 import { useAuth } from "@/lib/auth";
 import { fullName } from "@/lib/format";
@@ -21,6 +23,7 @@ const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigat
 export function Topbar({ onMenu, onSearch }: { onMenu: () => void; onSearch: () => void }) {
   const { user, logout } = useAuth();
   const { theme, setTheme, resolved, toggle } = useTheme();
+  const [pwOpen, setPwOpen] = useState(false);
   const initials = user ? (user.first_name[0] ?? "") + (user.last_name?.[0] ?? "") : "";
 
   return (
@@ -74,12 +77,17 @@ export function Topbar({ onMenu, onSearch }: { onMenu: () => void; onSearch: () 
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => setPwOpen(true)}>
+              <KeyRoundIcon />
+              {t.password.menu}
+            </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => void logout()}>
               <LogOutIcon />
               {t.auth.logout}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <ChangePasswordDialog open={pwOpen} onOpenChange={setPwOpen} />
       </div>
     </header>
   );
