@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+/* Swiper Custom Styles */
+.swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.5) !important;
+  width: 8px !important;
+  height: 8px !important;
+  opacity: 1 !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #f05a00 !important;
+  width: 32px !important;
+  border-radius: 4px !important;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  color: white !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(4px) !important;
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 50% !important;
+  opacity: 0;
+  transition: opacity 0.3s ease !important;
+  padding: 2px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.swiper-button-next:after,
+.swiper-button-prev:after {
+  font-size: 24px !important;
+  font-weight: bold !important;
+}
+
+.swiper:hover .swiper-button-next,
+.swiper:hover .swiper-button-prev {
+  opacity: 1 !important;
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+
+
+/* Light mode variables */
+:root {
+  --white: #ffffff;
+  --black: #000000;
+  --background: #f2f5f7;
+  --gray: #dedbdb;
+  --smoky: #8a8a8a;
+
+  --foreground: #171717;
+  --statDark: #171717;
+
+  /* MAIN PROBLEM FIX: Light va dark ranglar endi boshqacha */
+  --dark: #fff;  /* light mode uchun */
+  --coal: #212526;
+
+  --orange: #f05a00;
+  --red: #fc573b;
+
+  --font-noto: "Noto Sans", sans-serif;
+}
+
+/* TAILWIND 4 THEME TOKENS */
+@theme {
+  --color-white: var(--white);
+  --color-black: var(--black);
+  --color-background: var(--background);
+  --color-gray: var(--gray);
+  --color-smoky: var(--smoky);
+  --color-dark: var(--dark);
+  --color-coal: var(--coal);
+  --color-orange: var(--orange);
+  --color-red: var(--red);
+  --color-foreground: var(--foreground);
+  --color-statDark: var(--statDark);
+}
+
+/* Dark mode variables */
+.dark {
+  --white: #ffffff;
+  --black: #ffffff;
+
+  --foreground: #ededed;
+  --background: #212526;
+
+  --gray: #dedbdb;
+  --smoky: #8a8a8a;
+
+  /* MAIN FIX: endi dark mode uchun ALBATTA boshqa rang */
+  --dark: #3B3B3B;  /* bundan oldin siz light bilan BIR XIL berib qo‘ygan edingiz */
+  --coal: #171717;
+
+  --statDark: #171717;
+
+  --orange: #f05a00;
+  --red: #fc573b;
+}
+
+body {
+  font-family: var(--font-noto), sans-serif;
+}
+
+/* Scrollbar hide utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #8a8a8a;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #f05a00;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #3B3B3B;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #f05a00;
+}
+
+/* ChatBot button - subtle pulse scale animation */
+@keyframes pulse-scale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.chatbot-btn-pulse {
+  animation: pulse-scale 2s ease-in-out infinite;
+}
+
+.chatbot-btn-pulse:hover {
+  animation-play-state: paused;
+}
