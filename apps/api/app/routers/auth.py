@@ -188,3 +188,22 @@ async def admin_logout(
 @admin.get("/me", response_model=UserOut)
 async def admin_me(user: StaffUser):
     return user
+
+
+@admin.post(
+    "/change-password",
+    status_code=204,
+    dependencies=[Depends(rate_limit("a-change-password", 5, 900))],
+)
+async def admin_change_password(
+    data: ChangePasswordIn, user: StaffUser, db: DB, request: Request, response: Response
+):
+    if len(data.new_password) < 12:
+        raise AppError(422, "weak_password", "Staff passwords must be at least 12 characters")
+    if not verify_password(data.current_password, user.password_hash):
+        raise AppError(400, "invalid_password", "Current password is incorrect")
+    user.password_hash = hash_password(data.new_password)
+    await svc.revoke_all(db, user.id)
+    await record(db, user, "auth.change_password", "user", user.id, request=request)
+    await db.commit()
+    _clear_cookie(response, "admin")

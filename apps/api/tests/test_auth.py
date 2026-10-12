@@ -120,3 +120,22 @@ async def test_login_rate_limited(client):
         await client.post("/api/auth/login", json={"email": "h@x.ru", "password": "bad"})
     r = await client.post("/api/auth/login", json={"email": "h@x.ru", "password": "bad"})
     assert r.status_code == 429
+
+
+async def test_admin_change_password_revokes_sessions(client):
+    await make_user("own@x.ru", password="old-password-123", role=Role.admin)
+    h = await login(client, "own@x.ru", "old-password-123", admin=True)
+    r = await client.post(
+        "/api/admin/auth/change-password",
+        headers=h,
+        json={"current_password": "old-password-123", "new_password": "short"},
+    )
+    assert r.status_code == 422
+    r = await client.post(
+        "/api/admin/auth/change-password",
+        headers=h,
+        json={"current_password": "old-password-123", "new_password": "new-password-456"},
+    )
+    assert r.status_code == 204
+    assert (await client.get("/api/admin/auth/me", headers=h)).status_code == 401
+    await login(client, "own@x.ru", "new-password-456", admin=True)
