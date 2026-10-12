@@ -8,6 +8,7 @@ from app.core.deps import CSRF_HEADER
 from app.core.errors import install_error_handlers
 from app.routers import auth, catalog, shop
 from app.routers.admin import catalog as admin_catalog
+from app.routers.admin import media as admin_media
 from app.routers.admin import ops as admin_ops
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -50,8 +51,18 @@ def create_app() -> FastAPI:
         shop.router,
         admin_catalog.router,
         admin_ops.router,
+        admin_media.router,
     ):
         app.include_router(r, prefix="/api")
+
+    if not s.is_prod:
+        # In production Caddy serves /media directly from the shared volume.
+        from pathlib import Path
+
+        from fastapi.staticfiles import StaticFiles
+
+        Path(s.media_root).mkdir(parents=True, exist_ok=True)
+        app.mount("/media", StaticFiles(directory=s.media_root), name="media")
 
     @app.get("/api/health", tags=["meta"])
     async def health():

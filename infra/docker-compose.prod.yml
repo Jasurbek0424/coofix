@@ -31,6 +31,9 @@ services:
       COOFIX_REDIS_URL: redis://redis:6379/0
       COOFIX_COOKIE_SECURE: "true"
       COOFIX_CORS_ORIGINS: '["https://coofix.store","https://coofix.online"]'
+      COOFIX_MEDIA_ROOT: /data/media
+      COOFIX_MEDIA_URL: https://coofix.store/media
+    volumes: [media:/data/media]
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_started}
@@ -46,11 +49,13 @@ services:
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./placeholder:/srv/placeholder:ro
+      - media:/srv/media:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on: [api]
 
 volumes:
   pgdata:
+  media:
   caddy_data:
   caddy_config:

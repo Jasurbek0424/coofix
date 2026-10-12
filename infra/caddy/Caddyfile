@@ -30,6 +30,12 @@ www.coofix.online {
 
 coofix.store {
 	import common
+	handle /media/* {
+		root * /srv
+		header Cache-Control "public, max-age=31536000, immutable"
+		header Access-Control-Allow-Origin "https://coofix.online"
+		file_server
+	}
 	# Storefront (Next.js) goes here once apps/web is deployed.
 	handle {
 		root * /srv/placeholder

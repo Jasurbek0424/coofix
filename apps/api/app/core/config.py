@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     telegram_chat_id: str | None = None
     admin_url: str = "https://coofix.online"
 
+    media_root: str = "./media"
+    media_url: str = "/media"
+
     @property
     def is_prod(self) -> bool:
         return self.env == "prod"

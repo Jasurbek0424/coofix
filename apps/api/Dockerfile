@@ -7,7 +7,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY alembic.ini ./
 COPY migrations ./migrations
 COPY app ./app
-RUN useradd --system --uid 10001 coofix
+RUN useradd --system --uid 10001 coofix && mkdir -p /data/media && chown coofix /data/media
 USER coofix
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
