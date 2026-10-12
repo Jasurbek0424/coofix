@@ -197,3 +197,18 @@ async def test_concurrent_checkout_cannot_oversell(client, catalog):
     codes = sorted(r.status_code for r in results)
     assert codes == [201, 409, 409, 409, 409]
     assert await stock_of(p2.id) == 0
+
+
+def test_order_message_escapes_html():
+    from app.models import DeliveryMethod, Order, OrderItem
+    from app.services.notify import order_message
+
+    o = Order(
+        number=100001, customer_name="<b>x</b>", phone="+79990001122", email=None,
+        delivery_method=DeliveryMethod.pickup, address=None, comment="<script>",
+        delivery_minor=0, total_minor=123450,
+        items=[OrderItem(name="Дрель & <i>", quantity=1, line_total_minor=123450)],
+    )  # fmt: skip
+    msg = order_message(o)
+    assert "&lt;b&gt;x&lt;/b&gt;" in msg and "&lt;script&gt;" in msg and "&amp; &lt;i&gt;" in msg
+    assert "1 234.50 ₽" in msg

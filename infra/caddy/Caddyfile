@@ -1,0 +1,48 @@
+{
+	email admin@coofix.store
+}
+
+(common) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+	request_body {
+		max_size 10MB
+	}
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+}
+
+www.coofix.store {
+	redir https://coofix.store{uri} permanent
+}
+
+www.coofix.online {
+	redir https://coofix.online{uri} permanent
+}
+
+coofix.store {
+	import common
+	# Storefront (Next.js) goes here once apps/web is deployed.
+	handle {
+		root * /srv/placeholder
+		file_server
+	}
+}
+
+coofix.online {
+	import common
+	header X-Robots-Tag "noindex, nofollow"
+	# Admin SPA goes here once apps/admin is deployed.
+	handle {
+		root * /srv/placeholder
+		file_server
+	}
+}

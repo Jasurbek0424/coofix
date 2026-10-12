@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     free_delivery_from_minor: int = 1000000  # 10 000 ₽
     online_payments_enabled: bool = False
 
+    telegram_bot_token: str | None = None
+    telegram_chat_id: str | None = None
+    admin_url: str = "https://coofix.online"
+
     @property
     def is_prod(self) -> bool:
         return self.env == "prod"

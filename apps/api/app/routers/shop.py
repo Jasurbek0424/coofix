@@ -3,7 +3,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
@@ -25,6 +25,7 @@ from app.schemas.orders import (
     OrderOut,
 )
 from app.services import catalog as catalog_svc
+from app.services import notify
 from app.services import orders as svc
 
 router = APIRouter(tags=["shop"])
@@ -147,10 +148,13 @@ async def remove_favorite(product_id: int, user: CustomerUser, db: DB):
     status_code=201,
     dependencies=[Depends(rate_limit("checkout", 10, 600))],
 )
-async def place_order(data: CheckoutIn, user: OptionalCustomer, db: DB):
+async def place_order(
+    data: CheckoutIn, user: OptionalCustomer, db: DB, background: BackgroundTasks
+):
     order, token = await svc.checkout(db, data, user)
     await db.commit()
     await db.refresh(order)
+    background.add_task(notify.telegram, notify.order_message(order))
     return CheckoutOut(order=OrderOut.model_validate(order), access_token=token)
 
 
