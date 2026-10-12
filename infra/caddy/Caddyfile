@@ -36,7 +36,7 @@ coofix.store {
 		header Access-Control-Allow-Origin "https://coofix.online"
 		file_server
 	}
-	# Storefront (Next.js) goes here once apps/web is deployed.
+	# Placeholder until the storefront (apps/web) ships.
 	handle {
 		root * /srv/placeholder
 		file_server
@@ -46,9 +46,7 @@ coofix.store {
 coofix.online {
 	import common
 	header X-Robots-Tag "noindex, nofollow"
-	# Admin SPA goes here once apps/admin is deployed.
 	handle {
-		root * /srv/placeholder
-		file_server
+		reverse_proxy admin:8080
 	}
 }
