@@ -42,6 +42,13 @@ services:
       interval: 10s
       retries: 10
 
+  web:
+    build: ../apps/web
+    restart: unless-stopped
+    environment:
+      API_INTERNAL_URL: http://api:8000
+    depends_on: [api]
+
   admin:
     build: ../apps/admin
     restart: unless-stopped
@@ -56,7 +63,7 @@ services:
       - media:/srv/media:ro
       - caddy_data:/data
       - caddy_config:/config
-    depends_on: [api, admin]
+    depends_on: [api, web, admin]
 
 volumes:
   pgdata:

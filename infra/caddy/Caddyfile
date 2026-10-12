@@ -36,10 +36,8 @@ coofix.store {
 		header Access-Control-Allow-Origin "https://coofix.online"
 		file_server
 	}
-	# Placeholder until the storefront (apps/web) ships.
 	handle {
-		root * /srv/placeholder
-		file_server
+		reverse_proxy web:3000
 	}
 }
 
