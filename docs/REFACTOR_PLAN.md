@@ -44,7 +44,7 @@ infra/
 - **Catalog:** server-side pagination, sorting and filters (brand, price, stock, characteristics).
 - **Checkout and accounts:** guest checkout; checkout as a separate page; payment selection (Click, Payme, cash).
 - **Sync:** cart, favorites and compare synced to the server for logged-in users.
-- **i18n:** uz / ru (/ en).
+- **i18n:** launch `ru` only; architecture ready for `zh` (Chinese) later — locale-prefixed routes, translatable DB fields (JSONB `{ru, zh}`), no hardcoded strings.
 - **Design:**
   - A new design system built on the existing brand: orange `#f05a00`, coal, light surface.
   - Motion with anime.js / Motion, used sparingly.
@@ -89,4 +89,4 @@ Covers everything the legacy panel does, plus:
 
 ## Open decisions
 
-See questions to the owner: market (UZ vs RU), languages, storefront framework, data migration source.
+See questions to the owner: market/currency, payment providers, storefront framework, data migration source.
